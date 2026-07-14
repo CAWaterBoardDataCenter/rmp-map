@@ -2,6 +2,8 @@
 
 This is an interactive map of six California regional water monitoring programs (RMPs). Station locations (and wetland area coverage) are aggregated into **H3 hex grids** at three resolutions (≈5 km, 3 km, 1 km). The map shows where programs monitor and not results or sample counts over time. However, there is clear traceability from where the data was sourced and the method used to synthesize the data. 
 
+The Live Map is available here: https://isamuthung.github.io/regional_monitering_programs/
+
 ---
 
 ## Programs
