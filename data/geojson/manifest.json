@@ -1,0 +1,130 @@
+{
+  "resolutions": {
+    "6": "5km",
+    "7": "3km",
+    "8": "1km"
+  },
+  "programs": {
+    "bight": {
+      "label": "Southern California Bight",
+      "coverage_type": "stations",
+      "bounds": [
+        [
+          32.53442,
+          -120.60963
+        ],
+        [
+          34.46529,
+          -117.08308
+        ]
+      ],
+      "station_count": 2659,
+      "resolutions": {
+        "6": "r6/bight.geojson",
+        "7": "r7/bight.geojson",
+        "8": "r8/bight.geojson"
+      }
+    },
+    "delta": {
+      "label": "Delta",
+      "coverage_type": "stations",
+      "bounds": [
+        [
+          37.675555556,
+          -121.92011
+        ],
+        [
+          38.801973,
+          -121.264166667
+        ]
+      ],
+      "station_count": 202,
+      "resolutions": {
+        "6": "r6/delta.geojson",
+        "7": "r7/delta.geojson",
+        "8": "r8/delta.geojson"
+      }
+    },
+    "klamath_basin": {
+      "label": "Klamath Basin",
+      "coverage_type": "stations",
+      "bounds": [
+        [
+          40.30420681,
+          -124.07436
+        ],
+        [
+          43.258446,
+          -120.7519
+        ]
+      ],
+      "station_count": 2438,
+      "resolutions": {
+        "6": "r6/klamath_basin.geojson",
+        "7": "r7/klamath_basin.geojson",
+        "8": "r8/klamath_basin.geojson"
+      }
+    },
+    "russian_river": {
+      "label": "Russian River",
+      "coverage_type": "area",
+      "bounds": [
+        [
+          38.14030083554443,
+          -123.53418756339686
+        ],
+        [
+          39.389832527697735,
+          -122.35980511373643
+        ]
+      ],
+      "polygon_count": 91271,
+      "station_count": 91271,
+      "resolutions": {
+        "6": "r6/russian_river.geojson",
+        "7": "r7/russian_river.geojson",
+        "8": "r8/russian_river.geojson"
+      }
+    },
+    "sf_bay": {
+      "label": "SF Bay",
+      "coverage_type": "stations",
+      "bounds": [
+        [
+          37.27838,
+          -122.9319883
+        ],
+        [
+          38.20926,
+          -121.806267
+        ]
+      ],
+      "station_count": 832,
+      "resolutions": {
+        "6": "r6/sf_bay.geojson",
+        "7": "r7/sf_bay.geojson",
+        "8": "r8/sf_bay.geojson"
+      }
+    },
+    "smc": {
+      "label": "SMC",
+      "coverage_type": "stations",
+      "bounds": [
+        [
+          32.634814,
+          -119.4054
+        ],
+        [
+          34.72654,
+          -116.493371
+        ]
+      ],
+      "station_count": 214,
+      "resolutions": {
+        "6": "r6/smc.geojson",
+        "7": "r7/smc.geojson",
+        "8": "r8/smc.geojson"
+      }
+    }
+  }
+}

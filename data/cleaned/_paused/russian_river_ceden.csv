@@ -1,0 +1,9 @@
+station_id,station_name,lat,lon,county,waterbody,huc8,organization,permit_year
+C1-SRC-D,C1 - Santa Rosa Creek down gradient of urban footprint,38.445194,-122.776,SONOMA,,,SCWA,2009
+C2-SRC-U,C2 - Santa Rosa Creek up gradient of urban footprint,38.4565,-122.6365,SONOMA,,,SCWA,2009
+SRC-100UTK,Santa Rosa Creek 100ft US Transect K,38.44059,-122.75721,SONOMA,,,CSR,2015
+BC-100DTA,Brush Creek 100ft DS Transect A,38.45309,-122.67853,SONOMA,,,CSR,2015
+SRC-100DTA,Santa Rosa Creek 100ft DS Transect A,38.44121,-122.7596,SONOMA,,,CSR,2015
+SRC-TF,Santa Rosa Creek Transect F,38.44099,-122.75824,SONOMA,,,CSR,2015
+BC-TF,Brush Creek Transect F,38.45575,-122.6794,SONOMA,,,CSR,2015
+BC-100UTK,Brush Creek 100ft US Transect K,38.45448,-122.68006,SONOMA,,,CSR,2015

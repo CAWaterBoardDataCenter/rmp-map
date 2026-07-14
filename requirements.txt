@@ -1,0 +1,4 @@
+h3>=4.0
+pandas>=2.0
+geopandas>=1.0
+pyogrio>=0.10

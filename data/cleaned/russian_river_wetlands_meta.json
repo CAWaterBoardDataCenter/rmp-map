@@ -1,0 +1,28 @@
+{
+  "program_id": "russian_river",
+  "coverage_type": "area",
+  "source_file": "russian_river_geopackage_raw.gpkg",
+  "layer": "RRARI_Polygons",
+  "polygon_count": 91271,
+  "bounds": [
+    [
+      38.14030083554443,
+      -123.53418756339686
+    ],
+    [
+      39.389832527697735,
+      -122.35980511373643
+    ]
+  ],
+  "columns": [
+    "level1",
+    "level2",
+    "wetland_type",
+    "wetland_code",
+    "vegetation",
+    "source_data",
+    "source_data_year",
+    "source_org"
+  ],
+  "notes": "Wetland footprint polygons (RRARI). Map hexes represent area coverage, not point sample stations."
+}

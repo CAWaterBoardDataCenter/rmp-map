@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Regional Monitoring Station Footprints</title>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: system-ui, -apple-system, sans-serif; }
+
+    .ribbon {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 2000;
+      background: #1e293b;
+      color: #f8fafc;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 14px;
+      min-height: var(--ribbon-height, 44px);
+    }
+
+    .ribbon-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .ribbon-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .ribbon-dropdown {
+      position: relative;
+    }
+
+    .ribbon-dropdown-trigger {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #e2e8f0;
+      background: #334155;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      line-height: 1.2;
+    }
+
+    .ribbon-dropdown-trigger:hover {
+      background: #3f4f63;
+      border-color: #64748b;
+    }
+
+    .ribbon-dropdown.open .ribbon-dropdown-trigger {
+      background: #475569;
+      border-color: #94a3b8;
+    }
+
+    .ribbon-dropdown-chevron {
+      font-size: 0.55rem;
+      color: #94a3b8;
+      transition: transform 0.15s ease;
+    }
+
+    .ribbon-dropdown.open .ribbon-dropdown-chevron {
+      transform: rotate(180deg);
+    }
+
+    .ribbon-dropdown-panel {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      min-width: 200px;
+      max-width: min(320px, 90vw);
+      max-height: min(360px, 60vh);
+      overflow-y: auto;
+      padding: 6px;
+      background: #1e293b;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      z-index: 2100;
+    }
+
+    .ribbon-dropdown.open .ribbon-dropdown-panel {
+      display: block;
+    }
+
+    .dropdown-check,
+    .program-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      padding: 7px 10px;
+      border-radius: 5px;
+      user-select: none;
+      color: #e2e8f0;
+    }
+
+    .dropdown-check:hover,
+    .program-check:hover {
+      background: #334155;
+    }
+
+    .dropdown-check input,
+    .program-check input {
+      accent-color: currentColor;
+      flex-shrink: 0;
+    }
+
+    .program-check.disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .dropdown-divider {
+      height: 1px;
+      background: #334155;
+      margin: 4px 0;
+    }
+
+    .dropdown-option {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 7px 10px;
+      font-size: 0.8rem;
+      color: #e2e8f0;
+      background: none;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .dropdown-option:hover {
+      background: #334155;
+    }
+
+    .dropdown-option.active {
+      background: #0ea5e9;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    #program-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .ribbon-status {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      max-width: 340px;
+      text-align: right;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #map {
+      position: fixed;
+      top: var(--ribbon-height, 44px);
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+
+    .detail-panel {
+      position: fixed;
+      top: var(--ribbon-height, 44px);
+      right: 0;
+      width: min(420px, 100vw);
+      height: calc(100% - var(--ribbon-height, 44px));
+      background: #fff;
+      box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
+      z-index: 1500;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.2s ease;
+    }
+
+    .detail-panel.open { transform: translateX(0); }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 14px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+
+    .detail-header h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .detail-header .meta {
+      font-size: 0.78rem;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    .detail-close {
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      line-height: 1;
+      cursor: pointer;
+      color: #64748b;
+      padding: 0 4px;
+    }
+
+    .detail-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 16px;
+    }
+
+    .station-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+
+    .station-table th {
+      text-align: left;
+      padding: 6px 8px;
+      background: #f1f5f9;
+      border-bottom: 2px solid #e2e8f0;
+      position: sticky;
+      top: 0;
+    }
+
+    .station-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: top;
+    }
+
+    .station-table tr:hover td { background: #f8fafc; }
+
+    .legend-panel {
+      line-height: 1.45;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+      min-width: 148px;
+      max-width: 190px;
+      overflow: hidden;
+    }
+
+    .legend-panel-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #64748b;
+      padding: 8px 10px 4px;
+    }
+
+    .legend-block {
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .legend-block:first-of-type {
+      border-top: none;
+    }
+
+    .legend-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      padding: 7px 10px;
+      border: none;
+      background: none;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      color: #1e293b;
+    }
+
+    .legend-toggle:hover {
+      background: #f8fafc;
+    }
+
+    .legend-chevron {
+      font-size: 0.6rem;
+      color: #94a3b8;
+      transition: transform 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .legend-toggle.expanded .legend-chevron {
+      transform: rotate(90deg);
+    }
+
+    .legend-body {
+      display: none;
+      padding: 0 10px 8px 22px;
+    }
+
+    .legend-body.open {
+      display: block;
+    }
+
+    .legend-row {
+      font-size: 0.72rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    .legend-swatch {
+      width: 16px;
+      height: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      flex-shrink: 0;
+    }
+
+    .legend-swatch-hatch {
+      background: repeating-linear-gradient(
+        45deg,
+        #0891b2 0 3px,
+        #9333ea 3px 6px,
+        #dc2626 6px 9px
+      );
+    }
+
+    .county-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #334155;
+      text-shadow: 1px 1px 2px #fff, -1px -1px 2px #fff, 0 0 4px #fff;
+      white-space: nowrap;
+      pointer-events: none;
+      text-align: center;
+    }
+
+    .board-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #57534e;
+      text-shadow: 1px 1px 2px #fff, -1px -1px 2px #fff, 0 0 4px #fff;
+      white-space: nowrap;
+      pointer-events: none;
+      text-align: center;
+    }
+
+    .overlay-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      padding: 7px 10px;
+      border-radius: 5px;
+      user-select: none;
+      color: #e2e8f0;
+    }
+
+    .overlay-check:hover { background: #334155; }
+
+    @media (max-width: 720px) {
+      .ribbon-status { display: none; }
+      .ribbon-title { font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="ribbon">
+    <span class="ribbon-title">Regional Monitoring Footprints</span>
+
+    <div class="ribbon-controls">
+      <div class="ribbon-dropdown" id="programs-dropdown">
+        <button type="button" class="ribbon-dropdown-trigger" id="programs-trigger" aria-haspopup="true" aria-expanded="false">
+          Programs <span class="ribbon-dropdown-chevron">▼</span>
+        </button>
+        <div class="ribbon-dropdown-panel" id="programs-panel">
+          <label class="dropdown-check">
+            <input type="checkbox" id="select-all" checked /> All programs
+          </label>
+          <div class="dropdown-divider"></div>
+          <div id="program-list"></div>
+        </div>
+      </div>
+
+      <div class="ribbon-dropdown" id="hex-dropdown">
+        <button type="button" class="ribbon-dropdown-trigger" id="hex-trigger" aria-haspopup="true" aria-expanded="false">
+          Hex · Auto <span class="ribbon-dropdown-chevron">▼</span>
+        </button>
+        <div class="ribbon-dropdown-panel">
+          <button type="button" class="dropdown-option active" data-mode="auto">Auto (zoom-linked)</button>
+          <button type="button" class="dropdown-option" data-res="8">1 km</button>
+          <button type="button" class="dropdown-option" data-res="7">3 km</button>
+          <button type="button" class="dropdown-option" data-res="6">5 km</button>
+        </div>
+      </div>
+
+      <div class="ribbon-dropdown" id="basemap-dropdown">
+        <button type="button" class="ribbon-dropdown-trigger" id="basemap-trigger" aria-haspopup="true" aria-expanded="false">
+          Map · Standard <span class="ribbon-dropdown-chevron">▼</span>
+        </button>
+        <div class="ribbon-dropdown-panel">
+          <button type="button" class="dropdown-option active" data-basemap="standard">Standard</button>
+          <button type="button" class="dropdown-option" data-basemap="light">Light</button>
+          <button type="button" class="dropdown-option" data-basemap="terrain">Terrain</button>
+        </div>
+      </div>
+
+      <div class="ribbon-dropdown" id="overlays-dropdown">
+        <button type="button" class="ribbon-dropdown-trigger" id="overlays-trigger" aria-haspopup="true" aria-expanded="false">
+          Overlays · Off <span class="ribbon-dropdown-chevron">▼</span>
+        </button>
+        <div class="ribbon-dropdown-panel">
+          <label class="overlay-check">
+            <input type="checkbox" id="county-overlay" /> CA counties
+          </label>
+          <label class="overlay-check">
+            <input type="checkbox" id="regional-board-overlay" /> Regional water boards
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="ribbon-status" id="status">Loading…</div>
+  </header>
+
+  <div id="map"></div>
+
+  <aside class="detail-panel" id="detail-panel" aria-hidden="true">
+    <div class="detail-header">
+      <div>
+        <h2 id="detail-title">Hex detail</h2>
+        <div class="meta" id="detail-meta"></div>
+      </div>
+      <button type="button" class="detail-close" id="detail-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </aside>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+  <script>
+    const PROGRAM_STYLES = {
+      delta: {
+        label: "Delta",
+        palettes: ["#eff3ff", "#bdd7e7", "#6baed6", "#3182bd", "#08519c"],
+        stroke: "#2171b5",
+      },
+      sf_bay: {
+        label: "SF Bay",
+        palettes: ["#edf8e9", "#bae4b3", "#74c476", "#31a354", "#006d2c"],
+        stroke: "#238b45",
+      },
+      klamath_basin: {
+        label: "Klamath Basin",
+        palettes: ["#feedde", "#fdbe85", "#fd8d3c", "#e6550d", "#a63603"],
+        stroke: "#d94801",
+      },
+      smc: {
+        label: "SMC",
+        palettes: ["#f5f3ff", "#ddd6fe", "#a78bfa", "#7c3aed", "#5b21b6"],
+        stroke: "#7c3aed",
+      },
+      russian_river: {
+        label: "Russian River",
+        palettes: ["#fdf2f8", "#fbcfe8", "#f472b6", "#db2777", "#9d174d"],
+        stroke: "#db2777",
+      },
+      bight: {
+        label: "Southern California Bight",
+        palettes: ["#ecfeff", "#a5f3fc", "#22d3ee", "#0891b2", "#155e75"],
+        stroke: "#0891b2",
+      },
+    };
+
+    // Used for programs not listed above — add more entries as the roster grows.
+    const FALLBACK_PALETTES = [
+      { palettes: ["#f0f9ff", "#bae6fd", "#38bdf8", "#0284c7", "#075985"], stroke: "#0284c7" },
+      { palettes: ["#fefce8", "#fde68a", "#facc15", "#ca8a04", "#854d0e"], stroke: "#ca8a04" },
+      { palettes: ["#f5f5f4", "#d6d3d1", "#a8a29e", "#78716c", "#44403c"], stroke: "#78716c" },
+      { palettes: ["#fef2f2", "#fecaca", "#f87171", "#dc2626", "#991b1b"], stroke: "#dc2626" },
+      { palettes: ["#f0fdf4", "#bbf7d0", "#4ade80", "#16a34a", "#166534"], stroke: "#16a34a" },
+      { palettes: ["#faf5ff", "#e9d5ff", "#c084fc", "#9333ea", "#6b21a8"], stroke: "#9333ea" },
+    ];
+
+    const RES_LABELS = { 6: "5 km", 7: "3 km", 8: "1 km" };
+    const DATA_BASE = new URL("data/geojson/", window.location.href);
+    const COUNTIES_URL = new URL("data/ca_counties.geojson", window.location.href).href;
+    const REGIONAL_BOARDS_URL = new URL("data/ca_regional_boards.geojson", window.location.href).href;
+
+    const BASEMAPS = {
+      standard: {
+        label: "Standard",
+        layer: L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          maxZoom: 19,
+        }),
+      },
+      light: {
+        label: "Light",
+        layer: L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: "abcd",
+          maxZoom: 20,
+        }),
+      },
+      terrain: {
+        label: "Terrain",
+        layer: L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
+          attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, SRTM | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
+          maxZoom: 17,
+        }),
+      },
+    };
+
+    const geoCache = new Map();
+    let manifest = null;
+    let resolutionMode = "auto";
+    let manualResolution = 7;
+    let activeLayers = new Map();
+    let legendControl = null;
+    let shouldFitBounds = true;
+    let renderToken = 0;
+    let lastRenderedResolution = null;
+    let activeBasemap = "standard";
+    let baseTileLayer = null;
+    let countyLayerGroup = null;
+    let countyLabelMarkers = [];
+    let countiesGeoJSON = null;
+    let regionalBoardLayerGroup = null;
+    let regionalBoardLabelMarkers = [];
+    let regionalBoardsGeoJSON = null;
+    const legendExpanded = new Set();
+
+    const map = L.map("map", { zoomControl: true }).setView([38.5, -121.5], 7);
+    map.createPane("regionalBoardPane");
+    map.getPane("regionalBoardPane").style.zIndex = 345;
+    map.createPane("countyPane");
+    map.getPane("countyPane").style.zIndex = 350;
+    map.createPane("hexPane");
+    map.getPane("hexPane").style.zIndex = 400;
+    map.createPane("overlapHexPane");
+    map.getPane("overlapHexPane").style.zIndex = 410;
+
+    function setBasemap(basemapId) {
+      if (!BASEMAPS[basemapId]) return;
+      if (baseTileLayer) map.removeLayer(baseTileLayer);
+      baseTileLayer = BASEMAPS[basemapId].layer;
+      baseTileLayer.addTo(map);
+      activeBasemap = basemapId;
+    }
+
+    setBasemap("standard");
+
+    function updateOverlayLabelVisibility() {
+      const showCounties = map.getZoom() >= 8;
+      const showBoards = map.getZoom() >= 7;
+
+      countyLabelMarkers.forEach((marker) => {
+        const el = marker.getElement();
+        if (el) el.style.display = showCounties ? "" : "none";
+      });
+
+      regionalBoardLabelMarkers.forEach((marker) => {
+        const el = marker.getElement();
+        if (el) el.style.display = showBoards ? "" : "none";
+      });
+    }
+
+    async function ensureCountiesLoaded() {
+      if (countiesGeoJSON) return countiesGeoJSON;
+      const response = await fetch(COUNTIES_URL);
+      if (!response.ok) throw new Error(`Failed to load counties (${response.status})`);
+      countiesGeoJSON = await response.json();
+      return countiesGeoJSON;
+    }
+
+    async function showCountyOverlay() {
+      const geojson = await ensureCountiesLoaded();
+      if (countyLayerGroup) map.removeLayer(countyLayerGroup);
+
+      countyLabelMarkers = [];
+      countyLayerGroup = L.layerGroup();
+
+      const boundaries = L.geoJSON(geojson, {
+        pane: "countyPane",
+        interactive: false,
+        style: {
+          color: "#475569",
+          weight: 1.5,
+          fillColor: "#64748b",
+          fillOpacity: 0.04,
+        },
+      });
+      countyLayerGroup.addLayer(boundaries);
+
+      geojson.features.forEach((feature) => {
+        const { name, label_lat, label_lon } = feature.properties;
+        const marker = L.marker([label_lat, label_lon], {
+          pane: "countyPane",
+          interactive: false,
+          icon: L.divIcon({
+            className: "county-label",
+            html: escapeHtml(name),
+          }),
+        });
+        countyLabelMarkers.push(marker);
+        countyLayerGroup.addLayer(marker);
+      });
+
+      countyLayerGroup.addTo(map);
+      updateOverlayLabelVisibility();
+    }
+
+    function hideCountyOverlay() {
+      if (countyLayerGroup) {
+        map.removeLayer(countyLayerGroup);
+        countyLayerGroup = null;
+        countyLabelMarkers = [];
+      }
+    }
+
+    async function toggleCountyOverlay(show) {
+      if (show) await showCountyOverlay();
+      else hideCountyOverlay();
+    }
+
+    async function ensureRegionalBoardsLoaded() {
+      if (regionalBoardsGeoJSON) return regionalBoardsGeoJSON;
+      const response = await fetch(REGIONAL_BOARDS_URL);
+      if (!response.ok) throw new Error(`Failed to load regional boards (${response.status})`);
+      regionalBoardsGeoJSON = await response.json();
+      return regionalBoardsGeoJSON;
+    }
+
+    async function showRegionalBoardOverlay() {
+      const geojson = await ensureRegionalBoardsLoaded();
+      if (regionalBoardLayerGroup) map.removeLayer(regionalBoardLayerGroup);
+
+      regionalBoardLabelMarkers = [];
+      regionalBoardLayerGroup = L.layerGroup();
+
+      const boundaries = L.geoJSON(geojson, {
+        pane: "regionalBoardPane",
+        interactive: false,
+        style: {
+          color: "#78716c",
+          weight: 2,
+          dashArray: "6 4",
+          fillColor: "#a8a29e",
+          fillOpacity: 0.1,
+        },
+      });
+      regionalBoardLayerGroup.addLayer(boundaries);
+
+      geojson.features.forEach((feature) => {
+        const { label, label_lat, label_lon } = feature.properties;
+        const marker = L.marker([label_lat, label_lon], {
+          pane: "regionalBoardPane",
+          interactive: false,
+          icon: L.divIcon({
+            className: "board-label",
+            html: escapeHtml(label),
+          }),
+        });
+        regionalBoardLabelMarkers.push(marker);
+        regionalBoardLayerGroup.addLayer(marker);
+      });
+
+      regionalBoardLayerGroup.addTo(map);
+      updateOverlayLabelVisibility();
+    }
+
+    function hideRegionalBoardOverlay() {
+      if (regionalBoardLayerGroup) {
+        map.removeLayer(regionalBoardLayerGroup);
+        regionalBoardLayerGroup = null;
+        regionalBoardLabelMarkers = [];
+      }
+    }
+
+    async function toggleRegionalBoardOverlay(show) {
+      if (show) await showRegionalBoardOverlay();
+      else hideRegionalBoardOverlay();
+    }
+
+    function resolutionForZoom(zoom) {
+      if (zoom <= 7) return 6;
+      if (zoom <= 10) return 7;
+      return 8;
+    }
+
+    function currentResolution() {
+      if (resolutionMode === "auto") return resolutionForZoom(map.getZoom());
+      return manualResolution;
+    }
+
+    function colorForCount(count, breaks, palette) {
+      for (let i = breaks.length - 1; i >= 0; i--) {
+        if (count >= breaks[i]) return palette[Math.min(i + 1, palette.length - 1)];
+      }
+      return palette[0];
+    }
+
+    function computeBreaks(features, paletteLength = 5) {
+      if (!features.length) return [0];
+      const counts = features.map((f) => f.properties.station_count);
+      const max = Math.max(...counts, 1);
+      const step = Math.max(1, Math.ceil(max / (paletteLength - 1)));
+      return Array.from({ length: 4 }, (_, i) => i * step).filter(
+        (v, i, arr) => i === 0 || v !== arr[i - 1]
+      );
+    }
+
+    function ensureProgramStyle(programId, label) {
+      if (PROGRAM_STYLES[programId]) {
+        if (label) PROGRAM_STYLES[programId].label = label;
+        return PROGRAM_STYLES[programId];
+      }
+
+      let hash = 0;
+      for (let i = 0; i < programId.length; i++) {
+        hash = (hash * 31 + programId.charCodeAt(i)) >>> 0;
+      }
+      const fallback = FALLBACK_PALETTES[hash % FALLBACK_PALETTES.length];
+      PROGRAM_STYLES[programId] = {
+        label: label || programId.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+        palettes: fallback.palettes,
+        stroke: fallback.stroke,
+      };
+      return PROGRAM_STYLES[programId];
+    }
+
+    function programHasStations(programId) {
+      const meta = manifest?.programs?.[programId];
+      if (!meta) return false;
+      if (meta.coverage_type === "area") {
+        return Number.isFinite(meta.polygon_count) && meta.polygon_count > 0;
+      }
+      return Number.isFinite(meta.station_count) && meta.station_count > 0;
+    }
+
+    function programCountLabel(meta) {
+      if (meta.coverage_type === "area" && Number.isFinite(meta.polygon_count)) {
+        return ` (${meta.polygon_count.toLocaleString()} wetlands)`;
+      }
+      if (Number.isFinite(meta.station_count)) {
+        return ` (${meta.station_count})`;
+      }
+      return "";
+    }
+
+    function setDropdownTriggerText(triggerId, prefix, value) {
+      const trigger = document.getElementById(triggerId);
+      if (!trigger) return;
+      trigger.innerHTML = `${prefix} · ${escapeHtml(String(value))} <span class="ribbon-dropdown-chevron">▼</span>`;
+    }
+
+    function updateProgramsTriggerLabel() {
+      const boxes = [...document.querySelectorAll('input[name="program"]:not(:disabled)')];
+      const checked = boxes.filter((b) => b.checked);
+      let label;
+      if (!boxes.length) label = "None";
+      else if (checked.length === boxes.length) label = `All (${boxes.length})`;
+      else if (checked.length === 0) label = "None";
+      else label = `${checked.length}/${boxes.length}`;
+      setDropdownTriggerText("programs-trigger", "Programs", label);
+    }
+
+    function updateHexTriggerLabel() {
+      const label = resolutionMode === "auto"
+        ? "Auto"
+        : RES_LABELS[manualResolution];
+      setDropdownTriggerText("hex-trigger", "Hex", label);
+    }
+
+    function updateBasemapTriggerLabel() {
+      setDropdownTriggerText("basemap-trigger", "Map", BASEMAPS[activeBasemap].label);
+    }
+
+    function updateOverlaysTriggerLabel() {
+      let count = 0;
+      if (document.getElementById("county-overlay").checked) count += 1;
+      if (document.getElementById("regional-board-overlay").checked) count += 1;
+      const label = count === 0 ? "Off" : String(count);
+      setDropdownTriggerText("overlays-trigger", "Overlays", label);
+    }
+
+    function closeAllDropdowns() {
+      document.querySelectorAll(".ribbon-dropdown.open").forEach((dropdown) => {
+        dropdown.classList.remove("open");
+        const trigger = dropdown.querySelector(".ribbon-dropdown-trigger");
+        if (trigger) trigger.setAttribute("aria-expanded", "false");
+      });
+    }
+
+    function setupDropdowns() {
+      document.querySelectorAll(".ribbon-dropdown-trigger").forEach((trigger) => {
+        trigger.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const dropdown = trigger.closest(".ribbon-dropdown");
+          const wasOpen = dropdown.classList.contains("open");
+          closeAllDropdowns();
+          if (!wasOpen) {
+            dropdown.classList.add("open");
+            trigger.setAttribute("aria-expanded", "true");
+          }
+        });
+      });
+
+      document.querySelectorAll(".ribbon-dropdown-panel").forEach((panel) => {
+        panel.addEventListener("click", (e) => e.stopPropagation());
+      });
+
+      document.addEventListener("click", closeAllDropdowns);
+    }
+
+    function applyProgramControlStyle(labelEl, programId) {
+      const style = ensureProgramStyle(programId, manifest.programs[programId].label);
+      labelEl.style.color = style.stroke;
+      const input = labelEl.querySelector("input");
+      if (input) input.style.accentColor = style.stroke;
+    }
+
+    function buildProgramControls() {
+      const list = document.getElementById("program-list");
+      list.innerHTML = "";
+
+      const programIds = Object.keys(manifest.programs).sort((a, b) => {
+        const labelA = manifest.programs[a].label || a;
+        const labelB = manifest.programs[b].label || b;
+        return labelA.localeCompare(labelB);
+      });
+
+      programIds.forEach((programId) => {
+        const meta = manifest.programs[programId];
+        const hasStations = programHasStations(programId);
+        const countLabel = programCountLabel(meta);
+
+        const label = document.createElement("label");
+        label.className = "program-check" + (hasStations ? "" : " disabled");
+        label.title = hasStations
+          ? meta.coverage_type === "area"
+            ? `${meta.polygon_count?.toLocaleString()} wetland polygons`
+            : `${meta.station_count} stations in cleaned data`
+          : "No features passed build filtering — check PROGRAM_METADATA bounds in build_h3_geojson.py";
+        label.innerHTML = `<input type="checkbox" name="program" value="${programId}" ${hasStations ? "checked" : "disabled"} /> ${escapeHtml(meta.label)}${countLabel}`;
+        applyProgramControlStyle(label, programId);
+        label.querySelector("input").addEventListener("change", () => {
+          syncSelectAll();
+          updateProgramsTriggerLabel();
+          shouldFitBounds = true;
+          renderMap();
+        });
+        list.appendChild(label);
+      });
+      syncSelectAll();
+      updateProgramsTriggerLabel();
+    }
+
+    function selectedPrograms() {
+      return [...document.querySelectorAll('input[name="program"]:checked:not(:disabled)')]
+        .map((el) => el.value)
+        .filter((programId) => programHasStations(programId));
+    }
+
+    async function loadManifest() {
+      const url = new URL("manifest.json", DATA_BASE).href;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Failed to load manifest (${response.status})`);
+      manifest = await response.json();
+      if (!manifest?.programs || typeof manifest.programs !== "object") {
+        throw new Error("manifest.json is missing a valid programs section");
+      }
+    }
+
+    async function loadGeoJSON(programId, resolution) {
+      const key = `${programId}_r${resolution}`;
+      if (geoCache.has(key)) return geoCache.get(key);
+
+      const programMeta = manifest.programs[programId];
+      if (!programMeta) throw new Error(`Program not in manifest: ${programId}`);
+      const filename = programMeta.resolutions[String(resolution)];
+      if (!filename) throw new Error(`No r${resolution} layer for ${programId}`);
+      const url = new URL(filename, DATA_BASE).href;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Failed to load ${url} (${response.status})`);
+      const geojson = await response.json();
+      if (geojson.type !== "FeatureCollection" || !Array.isArray(geojson.features)) {
+        throw new Error(`${filename} is not a valid FeatureCollection`);
+      }
+      geoCache.set(key, geojson);
+      return geojson;
+    }
+
+    function openDetailPanel(feature) {
+      const props = feature.properties;
+      const resLabel = RES_LABELS[props.resolution] || `r${props.resolution}`;
+      const stations = props.stations || [];
+
+      if (props.overlap) {
+        document.getElementById("detail-title").textContent =
+          `Overlap — ${props.station_count} feature(s)`;
+        document.getElementById("detail-meta").textContent =
+          `${props.program_labels} · ${resLabel} hex · H3 ${props.h3_index}`;
+
+        const areaSummaries = props.area_summaries || [];
+        if (!stations.length && areaSummaries.length) {
+          let html = `<table class="station-table"><thead><tr>
+            <th>Program</th><th>Wetland polygons</th><th>Types</th>
+          </tr></thead><tbody>`;
+          areaSummaries.forEach((a) => {
+            html += `<tr>
+              <td>${escapeHtml(a.program)}</td>
+              <td>${a.polygon_count}</td>
+              <td>${escapeHtml(a.wetland_summary || a.level1_summary || "—")}</td>
+            </tr>`;
+          });
+          html += "</tbody></table>";
+          if (stations.length) {
+            html += "<hr style='margin:12px 0;border:none;border-top:1px solid #e2e8f0' />";
+          } else {
+            document.getElementById("detail-body").innerHTML = html;
+            document.getElementById("detail-panel").classList.add("open");
+            document.getElementById("detail-panel").setAttribute("aria-hidden", "false");
+            return;
+          }
+        }
+      } else if (props.coverage_type === "area") {
+        const style = ensureProgramStyle(props.program_id, props.program);
+        document.getElementById("detail-title").textContent =
+          `${style.label} — wetland area`;
+        document.getElementById("detail-meta").textContent =
+          `${props.polygon_count} wetland polygon(s) in this hex · ${resLabel} · H3 ${props.h3_index}`;
+      } else {
+        const style = ensureProgramStyle(props.program_id, props.program);
+        document.getElementById("detail-title").textContent =
+          `${style.label} — ${props.station_count} station(s)`;
+        document.getElementById("detail-meta").textContent =
+          `${resLabel} hex · H3 ${props.h3_index}`;
+      }
+
+      if (props.coverage_type === "area" && !props.overlap) {
+        let html = `<table class="station-table"><tbody>
+          <tr><th>Wetland polygons in hex</th><td>${props.polygon_count}</td></tr>`;
+        if (props.level1_summary) {
+          html += `<tr><th>Level 1 types</th><td>${escapeHtml(props.level1_summary)}</td></tr>`;
+        }
+        if (props.wetland_summary) {
+          html += `<tr><th>Wetland types</th><td>${escapeHtml(props.wetland_summary)}</td></tr>`;
+        }
+        html += `</tbody></table>
+          <p style="margin-top:10px;font-size:0.78rem;color:#64748b;">
+            Area coverage from RRARI wetland polygons — individual sample station coordinates are not available for this program.
+          </p>`;
+        document.getElementById("detail-body").innerHTML = html;
+        document.getElementById("detail-panel").classList.add("open");
+        document.getElementById("detail-panel").setAttribute("aria-hidden", "false");
+        return;
+      }
+
+      const metaKeys = new Set();
+      const showProgram = props.overlap || stations.some((s) => s.program || s.program_id);
+      if (showProgram) metaKeys.add("program");
+
+      stations.forEach((s) => {
+        Object.keys(s).forEach((k) => {
+          if (!["station_id", "station_name", "lat", "lon", "program", "program_id"].includes(k)) {
+            metaKeys.add(k);
+          }
+        });
+      });
+      const extraCols = [...metaKeys];
+
+      let html = `<table class="station-table"><thead><tr>
+        <th>Name</th><th>ID</th><th>Lat</th><th>Lon</th>
+        ${extraCols.map((c) => `<th>${c.replace(/_/g, " ")}</th>`).join("")}
+      </tr></thead><tbody>`;
+
+      stations.forEach((s) => {
+        const programLabel = s.program || ensureProgramStyle(s.program_id, "").label || "—";
+        html += `<tr>
+          <td>${escapeHtml(s.station_name || "—")}</td>
+          <td>${escapeHtml(s.station_id)}</td>
+          <td>${s.lat}</td>
+          <td>${s.lon}</td>
+          ${extraCols.map((c) => {
+            if (c === "program") return `<td>${escapeHtml(programLabel)}</td>`;
+            return `<td>${escapeHtml(s[c] || "—")}</td>`;
+          }).join("")}
+        </tr>`;
+      });
+
+      html += "</tbody></table>";
+      document.getElementById("detail-body").innerHTML = html;
+
+      const panel = document.getElementById("detail-panel");
+      panel.classList.add("open");
+      panel.setAttribute("aria-hidden", "false");
+    }
+
+    function closeDetailPanel() {
+      const panel = document.getElementById("detail-panel");
+      panel.classList.remove("open");
+      panel.setAttribute("aria-hidden", "true");
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function overlapPatternId(programIds) {
+      return `overlap-${programIds.join("-")}`.replace(/[^a-zA-Z0-9_-]/g, "");
+    }
+
+    function clearOverlapPatterns(svg) {
+      if (!svg) return;
+      svg.querySelector('defs[data-hex-patterns="true"]')?.remove();
+    }
+
+    function ensureStripePattern(svg, patternId, colors) {
+      if (!svg || !colors.length) return;
+
+      let defs = svg.querySelector('defs[data-hex-patterns="true"]');
+      if (!defs) {
+        defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+        defs.setAttribute("data-hex-patterns", "true");
+        svg.insertBefore(defs, svg.firstChild);
+      }
+
+      defs.querySelector(`#${CSS.escape(patternId)}`)?.remove();
+
+      const stripeWidth = 6;
+      const size = stripeWidth * colors.length;
+      const pattern = document.createElementNS("http://www.w3.org/2000/svg", "pattern");
+      pattern.setAttribute("id", patternId);
+      pattern.setAttribute("patternUnits", "userSpaceOnUse");
+      pattern.setAttribute("width", String(size));
+      pattern.setAttribute("height", String(size));
+      pattern.setAttribute("patternTransform", "rotate(45)");
+
+      colors.forEach((color, i) => {
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("x", String(i * stripeWidth));
+        rect.setAttribute("y", "0");
+        rect.setAttribute("width", String(stripeWidth));
+        rect.setAttribute("height", String(size));
+        rect.setAttribute("fill", color);
+        pattern.appendChild(rect);
+      });
+
+      defs.appendChild(pattern);
+    }
+
+    function indexFeaturesByH3(programLayers) {
+      const byH3 = new Map();
+      programLayers.forEach(({ programId, features, styleConfig, breaks }) => {
+        features.forEach((feature) => {
+          const h3 = feature.properties.h3_index;
+          if (!byH3.has(h3)) byH3.set(h3, []);
+          byH3.get(h3).push({
+            programId,
+            feature,
+            styleConfig,
+            fillColor: colorForCount(
+              feature.properties.station_count,
+              breaks,
+              styleConfig.palettes
+            ),
+          });
+        });
+      });
+      return byH3;
+    }
+
+    function buildOverlapFeatures(byH3, resolution) {
+      const overlapFeatures = [];
+      byH3.forEach((entries, h3Index) => {
+        if (entries.length < 2) return;
+
+        const programIds = entries.map((e) => e.programId).sort();
+        const patternId = overlapPatternId(programIds);
+        const colors = entries.map((e) => e.styleConfig.stroke);
+        const labels = entries.map((e) => e.styleConfig.label);
+        const stations = entries.flatMap((e) =>
+          (e.feature.properties.stations || []).map((s) => ({
+            ...s,
+            program_id: e.programId,
+            program: e.styleConfig.label,
+          }))
+        );
+        const areaSummaries = entries
+          .filter((e) => e.feature.properties.coverage_type === "area")
+          .map((e) => ({
+            program: e.styleConfig.label,
+            polygon_count: e.feature.properties.polygon_count,
+            wetland_summary: e.feature.properties.wetland_summary,
+            level1_summary: e.feature.properties.level1_summary,
+          }));
+        const featureCount =
+          stations.length +
+          areaSummaries.reduce((sum, a) => sum + (a.polygon_count || 0), 0);
+
+        overlapFeatures.push({
+          type: "Feature",
+          geometry: entries[0].feature.geometry,
+          properties: {
+            overlap: true,
+            h3_index: h3Index,
+            pattern_id: patternId,
+            overlap_colors: colors,
+            overlap_programs: programIds,
+            program_labels: labels.join(" + "),
+            station_count: featureCount,
+            area_summaries: areaSummaries,
+            resolution,
+            stations,
+          },
+        });
+      });
+      return overlapFeatures;
+    }
+
+    function applyOverlapPatterns(overlapLayer, overlapFeatures) {
+      const pane = map.getPane("overlapHexPane");
+      const svg = pane?.querySelector("svg");
+      if (!svg) return;
+
+      clearOverlapPatterns(svg);
+      overlapFeatures.forEach((feature) => {
+        ensureStripePattern(
+          svg,
+          feature.properties.pattern_id,
+          feature.properties.overlap_colors
+        );
+      });
+
+      overlapLayer.eachLayer((layer) => {
+        const patternId = layer.feature?.properties?.pattern_id;
+        if (patternId) {
+          layer.setStyle({
+            fillColor: `url(#${patternId})`,
+            fillOpacity: 1,
+            weight: 2,
+            color: "#1e293b",
+            opacity: 0.95,
+          });
+        }
+      });
+    }
+
+    function buildLayer(programId, geojson, breaks, styleConfig, overlappingH3) {
+      const features = overlappingH3.size
+        ? geojson.features.filter((f) => !overlappingH3.has(f.properties.h3_index))
+        : geojson.features;
+
+      if (!features.length) return null;
+
+      return L.geoJSON(
+        { type: "FeatureCollection", features },
+        {
+          pane: "hexPane",
+          style: (feature) => ({
+            fillColor: colorForCount(
+              feature.properties.station_count,
+              breaks,
+              styleConfig.palettes
+            ),
+            weight: 1,
+            opacity: 0.85,
+            color: styleConfig.stroke,
+            fillOpacity: selectedPrograms().length > 1 ? 0.55 : 0.65,
+          }),
+          onEachFeature: (feature, layer) => {
+            layer.on("click", (e) => {
+              L.DomEvent.stopPropagation(e);
+              openDetailPanel(feature);
+            });
+            const { station_count, program, coverage_type, polygon_count } = feature.properties;
+            const tooltipCount = coverage_type === "area"
+              ? `${polygon_count ?? station_count} wetland polygon(s)`
+              : `${station_count} station(s)`;
+            layer.bindTooltip(`${program}: ${tooltipCount}`, { sticky: true });
+          },
+        }
+      );
+    }
+
+    function buildOverlapLayer(overlapFeatures) {
+      if (!overlapFeatures.length) return null;
+
+      const layer = L.geoJSON(
+        { type: "FeatureCollection", features: overlapFeatures },
+        {
+          pane: "overlapHexPane",
+          style: (feature) => ({
+            fillColor: `url(#${feature.properties.pattern_id})`,
+            fillOpacity: 1,
+            weight: 2,
+            color: "#1e293b",
+            opacity: 0.95,
+          }),
+          onEachFeature: (feature, layer) => {
+            layer.on("click", (e) => {
+              L.DomEvent.stopPropagation(e);
+              openDetailPanel(feature);
+            });
+            const { station_count, program_labels } = feature.properties;
+            layer.bindTooltip(`${program_labels}: ${station_count}`, { sticky: true });
+          },
+        }
+      );
+
+      layer.on("add", () => {
+        syncOverlapPatternsWhenReady(layer, overlapFeatures);
+      });
+
+      return layer;
+    }
+
+    function syncOverlapPatternsWhenReady(overlapLayer, overlapFeatures, attempt = 0) {
+      const svg = map.getPane("overlapHexPane")?.querySelector("svg");
+      if (!svg) {
+        if (attempt < 12) {
+          requestAnimationFrame(() =>
+            syncOverlapPatternsWhenReady(overlapLayer, overlapFeatures, attempt + 1)
+          );
+        }
+        return;
+      }
+      applyOverlapPatterns(overlapLayer, overlapFeatures);
+    }
+
+    function updateLegend(layerStats, overlapCount = 0) {
+      if (legendControl) map.removeControl(legendControl);
+
+      legendControl = L.control({ position: "bottomright" });
+      legendControl.onAdd = function () {
+        const panel = L.DomUtil.create("div", "legend-panel");
+        const title = L.DomUtil.create("div", "legend-panel-title", panel);
+        title.textContent = "Legend";
+
+        if (overlapCount > 0) {
+          const block = L.DomUtil.create("div", "legend-block", panel);
+          const row = L.DomUtil.create("div", "legend-row", block);
+          row.style.padding = "8px 10px";
+          row.innerHTML =
+            '<span class="legend-swatch legend-swatch-hatch"></span>Overlapping programs';
+        }
+
+        layerStats.forEach(({ programId, breaks }) => {
+          const style = PROGRAM_STYLES[programId];
+          const block = L.DomUtil.create("div", "legend-block", panel);
+
+          const toggle = L.DomUtil.create("button", "legend-toggle", block);
+          toggle.type = "button";
+          toggle.style.color = style.stroke;
+          toggle.innerHTML = `<span class="legend-chevron">&#9654;</span>${style.label}`;
+          toggle.setAttribute("aria-expanded", "false");
+
+          const body = L.DomUtil.create("div", "legend-body", block);
+
+          if (legendExpanded.has(programId)) {
+            toggle.classList.add("expanded");
+            body.classList.add("open");
+            toggle.setAttribute("aria-expanded", "true");
+          }
+
+          for (let i = 0; i < breaks.length; i++) {
+            const lo = breaks[i];
+            const hi = breaks[i + 1] != null ? breaks[i + 1] - 1 : "+";
+            const color = style.palettes[Math.min(i + 1, style.palettes.length - 1)];
+            const label = hi === "+" ? `${lo}+` : `${lo}${lo === hi ? "" : `–${hi}`}`;
+            const row = L.DomUtil.create("div", "legend-row", body);
+            row.innerHTML = `<span class="legend-swatch" style="background:${color}"></span>${label}`;
+          }
+
+          L.DomEvent.disableClickPropagation(toggle);
+          toggle.addEventListener("click", () => {
+            const isOpen = body.classList.toggle("open");
+            toggle.classList.toggle("expanded", isOpen);
+            toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+            if (isOpen) legendExpanded.add(programId);
+            else legendExpanded.delete(programId);
+          });
+        });
+
+        L.DomEvent.disableClickPropagation(panel);
+        L.DomEvent.disableScrollPropagation(panel);
+        return panel;
+      };
+      legendControl.addTo(map);
+    }
+
+    function unionBounds(programIds) {
+      if (!manifest || !programIds.length) return null;
+      let south = Infinity, west = Infinity, north = -Infinity, east = -Infinity;
+      programIds.forEach((id) => {
+        const bounds = manifest.programs[id]?.bounds;
+        if (!bounds) return;
+        const [[s, w], [n, e]] = bounds;
+        if (![s, w, n, e].every(Number.isFinite)) return;
+        south = Math.min(south, s);
+        west = Math.min(west, w);
+        north = Math.max(north, n);
+        east = Math.max(east, e);
+      });
+      if (!Number.isFinite(south)) return null;
+      return L.latLngBounds([south, west], [north, east]);
+    }
+
+    async function renderMap() {
+      const token = ++renderToken;
+      const programs = selectedPrograms();
+      const resolution = currentResolution();
+      const statusEl = document.getElementById("status");
+
+      if (!programs.length) {
+        activeLayers.forEach((layer) => map.removeLayer(layer));
+        activeLayers.clear();
+        statusEl.textContent = "Select at least one program.";
+        closeDetailPanel();
+        return;
+      }
+
+      statusEl.textContent = `Loading ${RES_LABELS[resolution]} hexes…`;
+
+      activeLayers.forEach((layer) => map.removeLayer(layer));
+      activeLayers.clear();
+      closeDetailPanel();
+
+      const layerStats = [];
+      let totalHexes = 0;
+      let totalStations = 0;
+      let overlapCount = 0;
+
+      try {
+        const programLayers = [];
+        for (const programId of programs) {
+          const geojson = await loadGeoJSON(programId, resolution);
+          if (token !== renderToken) return;
+
+          const styleConfig = ensureProgramStyle(
+            programId,
+            manifest.programs[programId].label
+          );
+          const breaks = computeBreaks(geojson.features, styleConfig.palettes.length);
+          programLayers.push({ programId, features: geojson.features, styleConfig, breaks, geojson });
+        }
+
+        const overlappingH3 = new Set();
+        let overlapFeatures = [];
+
+        if (programs.length > 1) {
+          const byH3 = indexFeaturesByH3(programLayers);
+          byH3.forEach((entries, h3) => {
+            if (entries.length >= 2) overlappingH3.add(h3);
+          });
+          overlapFeatures = buildOverlapFeatures(byH3, resolution);
+          overlapCount = overlapFeatures.length;
+        }
+
+        for (const { programId, geojson, styleConfig, breaks } of programLayers) {
+          const layer = buildLayer(programId, geojson, breaks, styleConfig, overlappingH3);
+          if (layer) {
+            layer.addTo(map);
+            activeLayers.set(programId, layer);
+          }
+          layerStats.push({ programId, breaks });
+
+          totalHexes += overlappingH3.size
+            ? geojson.features.filter((f) => !overlappingH3.has(f.properties.h3_index)).length
+            : geojson.features.length;
+          totalStations += geojson.features.reduce(
+            (s, f) => s + f.properties.station_count,
+            0
+          );
+        }
+
+        if (overlapFeatures.length) {
+          const overlapLayer = buildOverlapLayer(overlapFeatures);
+          if (overlapLayer) {
+            overlapLayer.addTo(map);
+            activeLayers.set("__overlap__", overlapLayer);
+            totalHexes += overlapFeatures.length;
+          }
+        }
+
+        updateLegend(layerStats, overlapCount);
+
+        const modeLabel = resolutionMode === "auto"
+          ? `Auto → ${RES_LABELS[resolution]}`
+          : RES_LABELS[resolution];
+
+        const overlapNote = overlapCount ? ` · ${overlapCount} overlap hexes` : "";
+        statusEl.textContent =
+          `${programs.length} program(s) · ${modeLabel} · ${totalStations} stations in ${totalHexes} hexes${overlapNote}`;
+
+        lastRenderedResolution = resolution;
+        updateHexTriggerLabel();
+
+        if (shouldFitBounds) {
+          const bounds = unionBounds(programs);
+          if (bounds && bounds.isValid()) {
+            map.fitBounds(bounds, { padding: [32, 32], maxZoom: 10 });
+          }
+          shouldFitBounds = false;
+        }
+      } catch (err) {
+        statusEl.textContent = `Error: ${err.message}`;
+        console.error(err);
+      }
+    }
+
+    function syncSelectAll() {
+      const boxes = [...document.querySelectorAll('input[name="program"]:not(:disabled)')];
+      const selectAll = document.getElementById("select-all");
+      if (!boxes.length) {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+        updateProgramsTriggerLabel();
+        return;
+      }
+      const checked = boxes.filter((b) => b.checked).length;
+      selectAll.checked = checked === boxes.length;
+      selectAll.indeterminate = checked > 0 && checked < boxes.length;
+      updateProgramsTriggerLabel();
+    }
+
+    document.getElementById("select-all").addEventListener("change", (e) => {
+      const checked = e.target.checked;
+      document.querySelectorAll('input[name="program"]:not(:disabled)').forEach((box) => {
+        box.checked = checked;
+      });
+      updateProgramsTriggerLabel();
+      shouldFitBounds = true;
+      renderMap();
+    });
+
+    document.querySelectorAll("#hex-dropdown .dropdown-option").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#hex-dropdown .dropdown-option").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        if (btn.dataset.mode === "auto") {
+          resolutionMode = "auto";
+        } else {
+          resolutionMode = "manual";
+          manualResolution = Number(btn.dataset.res);
+        }
+        updateHexTriggerLabel();
+        closeAllDropdowns();
+        renderMap();
+      });
+    });
+
+    document.querySelectorAll("#basemap-dropdown .dropdown-option").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#basemap-dropdown .dropdown-option").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        setBasemap(btn.dataset.basemap);
+        updateBasemapTriggerLabel();
+        closeAllDropdowns();
+      });
+    });
+
+    document.getElementById("county-overlay").addEventListener("change", async (e) => {
+      try {
+        await toggleCountyOverlay(e.target.checked);
+        updateOverlaysTriggerLabel();
+      } catch (err) {
+        e.target.checked = false;
+        updateOverlaysTriggerLabel();
+        console.error(err);
+        document.getElementById("status").textContent = `County overlay error: ${err.message}`;
+      }
+    });
+
+    document.getElementById("regional-board-overlay").addEventListener("change", async (e) => {
+      try {
+        await toggleRegionalBoardOverlay(e.target.checked);
+        updateOverlaysTriggerLabel();
+      } catch (err) {
+        e.target.checked = false;
+        updateOverlaysTriggerLabel();
+        console.error(err);
+        document.getElementById("status").textContent = `Regional board overlay error: ${err.message}`;
+      }
+    });
+
+    map.on("zoomend", () => {
+      updateOverlayLabelVisibility();
+      if (resolutionMode !== "auto") return;
+      const res = currentResolution();
+      if (res !== lastRenderedResolution) renderMap();
+    });
+
+    map.on("click", closeDetailPanel);
+    document.getElementById("detail-close").addEventListener("click", closeDetailPanel);
+
+    (async function init() {
+      setupDropdowns();
+      updateHexTriggerLabel();
+      updateBasemapTriggerLabel();
+      updateOverlaysTriggerLabel();
+      try {
+        await loadManifest();
+        buildProgramControls();
+        await renderMap();
+      } catch (err) {
+        document.getElementById("status").textContent = `Error: ${err.message}`;
+        console.error(err);
+      }
+    })();
+  </script>
+</body>
+</html>

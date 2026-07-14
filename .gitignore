@@ -1,0 +1,25 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Large source data — keep local only (GB-scale downloads)
+data/raw/
+
+# Large cleaned geometries — rebuild locally from raw
+*.gpkg
+
+# Legacy / stale root folder (active layers live in data/geojson/)
+/geojson/
+
+# Editor
+.vscode/
+.idea/
+*.swp
