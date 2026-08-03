@@ -13,6 +13,9 @@ desktop.ini
 # Large source data — keep local only (GB-scale downloads)
 data/raw/
 
+# Intermediate local analysis (not needed for the map)
+data/raw_profile_stats.json
+
 # Large cleaned geometries — rebuild locally from raw
 *.gpkg
 

@@ -10,9 +10,42 @@
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
     crossorigin=""
   />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; font-family: system-ui, -apple-system, sans-serif; }
+
+    :root {
+      --bg: #fdfdfc;
+      --ribbon-bg: #fbfbfa;
+      --ribbon-border: #e5e3df;
+      --text: #1c1917;
+      --text-soft: #6b6862;
+      --text-softer: #928f89;
+      --accent: #0f766e;
+      --accent-dark: #0b5952;
+      --accent-soft: #ccfbf1;
+      --accent-bg: #f0fdfa;
+      --surface: #ffffff;
+      --surface-hover: #f5f5f4;
+      --border: #e7e5e4;
+      --gray-fill: #cbd5e1;
+      --gray-stroke: #94a3b8;
+      --shadow-sm: 0 1px 2px rgba(28, 25, 23, 0.06);
+      --shadow-md: 0 8px 24px rgba(28, 25, 23, 0.12);
+      --shadow-lg: 0 24px 64px rgba(28, 25, 23, 0.22);
+    }
+
+    html, body {
+      height: 100%;
+      font-family: "DM Sans", "Source Sans 3", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
 
     .ribbon {
       position: fixed;
@@ -20,20 +53,34 @@
       left: 0;
       right: 0;
       z-index: 2000;
-      background: #1e293b;
-      color: #f8fafc;
-      border-bottom: 1px solid #334155;
+      background: var(--ribbon-bg);
+      color: var(--text);
+      border-bottom: 1px solid var(--ribbon-border);
+      box-shadow: 0 1px 4px rgba(28, 25, 23, 0.05);
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 8px 14px;
-      min-height: var(--ribbon-height, 44px);
+      padding: 8px 16px;
+      min-height: var(--ribbon-height, 46px);
+    }
+
+    .ribbon-logo {
+      width: 9px;
+      height: 9px;
+      border-radius: 3px;
+      background: var(--accent);
+      display: inline-block;
+      flex-shrink: 0;
     }
 
     .ribbon-title {
-      font-size: 0.88rem;
-      font-weight: 600;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
       white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .ribbon-controls {
@@ -43,39 +90,65 @@
       flex-wrap: wrap;
     }
 
+    .ribbon-sep {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+      margin: 0 2px;
+      flex-shrink: 0;
+    }
+
     .ribbon-dropdown {
       position: relative;
     }
 
-    .ribbon-dropdown-trigger {
+    .ribbon-dropdown-trigger,
+    .ribbon-btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 5px 10px;
+      padding: 6px 11px;
+      font-family: inherit;
       font-size: 0.78rem;
-      font-weight: 500;
-      color: #e2e8f0;
-      background: #334155;
-      border: 1px solid #475569;
-      border-radius: 6px;
+      font-weight: 600;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 7px;
       cursor: pointer;
       white-space: nowrap;
       line-height: 1.2;
+      box-shadow: var(--shadow-sm);
+      transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
     }
 
-    .ribbon-dropdown-trigger:hover {
-      background: #3f4f63;
-      border-color: #64748b;
+    .ribbon-dropdown-trigger:hover,
+    .ribbon-btn:hover {
+      background: var(--surface-hover);
+      border-color: #d6d3d1;
     }
 
     .ribbon-dropdown.open .ribbon-dropdown-trigger {
-      background: #475569;
-      border-color: #94a3b8;
+      background: var(--accent-bg);
+      border-color: var(--accent);
+      color: var(--accent-dark);
+    }
+
+    .ribbon-btn-accent {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .ribbon-btn-accent:hover {
+      background: var(--accent-dark);
+      border-color: var(--accent-dark);
+      color: #fff;
     }
 
     .ribbon-dropdown-chevron {
       font-size: 0.55rem;
-      color: #94a3b8;
+      color: var(--text-softer);
       transition: transform 0.15s ease;
     }
 
@@ -86,17 +159,17 @@
     .ribbon-dropdown-panel {
       display: none;
       position: absolute;
-      top: calc(100% + 4px);
+      top: calc(100% + 6px);
       left: 0;
-      min-width: 200px;
+      min-width: 210px;
       max-width: min(320px, 90vw);
-      max-height: min(360px, 60vh);
+      max-height: min(380px, 60vh);
       overflow-y: auto;
       padding: 6px;
-      background: #1e293b;
-      border: 1px solid #475569;
-      border-radius: 8px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: var(--shadow-md);
       z-index: 2100;
     }
 
@@ -105,27 +178,67 @@
     }
 
     .dropdown-check,
-    .program-check {
+    .program-check,
+    .overlay-check {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 8px;
       font-size: 0.8rem;
       cursor: pointer;
       padding: 7px 10px;
-      border-radius: 5px;
+      border-radius: 6px;
       user-select: none;
-      color: #e2e8f0;
+      color: var(--text);
     }
 
     .dropdown-check:hover,
-    .program-check:hover {
-      background: #334155;
+    .program-check:hover,
+    .overlay-check:hover {
+      background: var(--surface-hover);
     }
 
     .dropdown-check input,
-    .program-check input {
+    .program-check input,
+    .overlay-check input {
       accent-color: currentColor;
       flex-shrink: 0;
+    }
+
+    .program-check .program-check-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    .program-check .program-check-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .info-btn {
+      flex-shrink: 0;
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-softer);
+      font-size: 0.66rem;
+      line-height: 1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .info-btn:hover {
+      background: var(--accent-bg);
+      color: var(--accent-dark);
+      border-color: var(--accent);
     }
 
     .program-check.disabled {
@@ -135,7 +248,7 @@
 
     .dropdown-divider {
       height: 1px;
-      background: #334155;
+      background: var(--border);
       margin: 4px 0;
     }
 
@@ -144,35 +257,43 @@
       width: 100%;
       text-align: left;
       padding: 7px 10px;
+      font-family: inherit;
       font-size: 0.8rem;
-      color: #e2e8f0;
+      color: var(--text);
       background: none;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
     }
 
     .dropdown-option:hover {
-      background: #334155;
+      background: var(--surface-hover);
     }
 
     .dropdown-option.active {
-      background: #0ea5e9;
+      background: var(--accent);
       color: #fff;
       font-weight: 600;
     }
 
-    #program-list {
+    #program-list,
+    #board-list {
       display: flex;
       flex-direction: column;
       gap: 1px;
     }
 
+    .filter-empty-note {
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      color: var(--text-soft);
+    }
+
     .ribbon-status {
       margin-left: auto;
       font-size: 0.75rem;
-      color: #94a3b8;
-      max-width: 340px;
+      color: var(--text-soft);
+      max-width: 360px;
       text-align: right;
       line-height: 1.3;
       white-space: nowrap;
@@ -182,20 +303,22 @@
 
     #map {
       position: fixed;
-      top: var(--ribbon-height, 44px);
+      top: var(--ribbon-height, 46px);
       left: 0;
       right: 0;
       bottom: 0;
+      background: #eef2f1;
     }
 
-    .detail-panel {
+    .detail-panel,
+    .summary-drawer {
       position: fixed;
-      top: var(--ribbon-height, 44px);
+      top: var(--ribbon-height, 46px);
       right: 0;
       width: min(420px, 100vw);
-      height: calc(100% - var(--ribbon-height, 44px));
-      background: #fff;
-      box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
+      height: calc(100% - var(--ribbon-height, 46px));
+      background: var(--surface);
+      box-shadow: -4px 0 24px rgba(28, 25, 23, 0.16);
       z-index: 1500;
       display: flex;
       flex-direction: column;
@@ -203,26 +326,32 @@
       transition: transform 0.2s ease;
     }
 
-    .detail-panel.open { transform: translateX(0); }
+    .summary-drawer {
+      width: min(480px, 100vw);
+      z-index: 1600;
+    }
+
+    .detail-panel.open,
+    .summary-drawer.open { transform: translateX(0); }
 
     .detail-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       padding: 14px 16px;
-      border-bottom: 1px solid #e2e8f0;
-      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-hover);
     }
 
     .detail-header h2 {
       font-size: 0.95rem;
-      font-weight: 600;
-      color: #1e293b;
+      font-weight: 700;
+      color: var(--text);
     }
 
     .detail-header .meta {
       font-size: 0.78rem;
-      color: #64748b;
+      color: var(--text-soft);
       margin-top: 4px;
     }
 
@@ -232,14 +361,14 @@
       font-size: 1.4rem;
       line-height: 1;
       cursor: pointer;
-      color: #64748b;
+      color: var(--text-soft);
       padding: 0 4px;
     }
 
     .detail-body {
       flex: 1;
       overflow-y: auto;
-      padding: 12px 16px;
+      padding: 14px 16px;
     }
 
     .station-table {
@@ -251,25 +380,25 @@
     .station-table th {
       text-align: left;
       padding: 6px 8px;
-      background: #f1f5f9;
-      border-bottom: 2px solid #e2e8f0;
+      background: var(--surface-hover);
+      border-bottom: 2px solid var(--border);
       position: sticky;
       top: 0;
     }
 
     .station-table td {
       padding: 6px 8px;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid #f1f5f4;
       vertical-align: top;
     }
 
-    .station-table tr:hover td { background: #f8fafc; }
+    .station-table tr:hover td { background: var(--surface-hover); }
 
     .legend-panel {
       line-height: 1.45;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+      background: var(--surface);
+      border-radius: 10px;
+      box-shadow: var(--shadow-md);
       min-width: 148px;
       max-width: 190px;
       overflow: hidden;
@@ -277,15 +406,15 @@
 
     .legend-panel-title {
       font-size: 0.72rem;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      color: #64748b;
+      color: var(--text-soft);
       padding: 8px 10px 4px;
     }
 
     .legend-block {
-      border-top: 1px solid #f1f5f9;
+      border-top: 1px solid #f1f5f4;
     }
 
     .legend-block:first-of-type {
@@ -300,20 +429,21 @@
       padding: 7px 10px;
       border: none;
       background: none;
+      font-family: inherit;
       font-size: 0.78rem;
       font-weight: 600;
       text-align: left;
       cursor: pointer;
-      color: #1e293b;
+      color: var(--text);
     }
 
     .legend-toggle:hover {
-      background: #f8fafc;
+      background: var(--surface-hover);
     }
 
     .legend-chevron {
       font-size: 0.6rem;
-      color: #94a3b8;
+      color: var(--text-softer);
       transition: transform 0.15s ease;
       flex-shrink: 0;
     }
@@ -355,10 +485,14 @@
       );
     }
 
+    .legend-swatch-gray {
+      background: var(--gray-fill);
+    }
+
     .county-label {
       font-size: 10px;
       font-weight: 600;
-      color: #334155;
+      color: var(--text);
       text-shadow: 1px 1px 2px #fff, -1px -1px 2px #fff, 0 0 4px #fff;
       white-space: nowrap;
       pointer-events: none;
@@ -375,29 +509,180 @@
       text-align: center;
     }
 
-    .overlay-check {
-      display: flex;
+    /* Welcome modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(28, 25, 23, 0.45);
+      z-index: 3000;
+      display: none;
       align-items: center;
-      gap: 8px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      padding: 7px 10px;
-      border-radius: 5px;
-      user-select: none;
-      color: #e2e8f0;
+      justify-content: center;
+      padding: 24px;
     }
 
-    .overlay-check:hover { background: #334155; }
+    .modal-overlay.open { display: flex; }
+
+    .modal-card {
+      background: var(--surface);
+      border-radius: 16px;
+      box-shadow: var(--shadow-lg);
+      width: min(720px, 100%);
+      max-height: min(660px, 90vh);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      color: var(--text-soft);
+      padding: 2px 6px;
+    }
+
+    .modal-close:hover { color: var(--text); }
+
+    .modal-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 10px 22px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-tab {
+      padding: 8px 14px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-soft);
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+
+    .modal-tab.active {
+      color: var(--accent-dark);
+      border-bottom-color: var(--accent);
+    }
+
+    .modal-tab:hover { color: var(--text); }
+
+    .modal-body {
+      padding: 18px 22px;
+      overflow-y: auto;
+      flex: 1;
+      font-size: 0.86rem;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    .modal-body p { margin-bottom: 10px; }
+    .modal-body a { color: var(--accent-dark); }
+
+    .modal-footer {
+      padding: 14px 22px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover { background: var(--accent-dark); }
+
+    .profile-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+
+    .profile-card:hover {
+      box-shadow: var(--shadow-sm);
+      border-color: var(--accent);
+    }
+
+    .profile-card h4 {
+      font-size: 0.86rem;
+      font-weight: 700;
+      margin-bottom: 3px;
+      color: var(--accent-dark);
+    }
+
+    .profile-card p {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      margin: 0;
+    }
+
+    .code-block {
+      background: var(--surface-hover);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 10px;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.72rem;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--text);
+    }
+
+    .stats-heading {
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .summary-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 16px 0 10px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
 
     @media (max-width: 720px) {
       .ribbon-status { display: none; }
-      .ribbon-title { font-size: 0.8rem; }
+      .ribbon-title { font-size: 0.82rem; }
     }
   </style>
 </head>
 <body>
   <header class="ribbon">
-    <span class="ribbon-title">Regional Monitoring Footprints</span>
+    <span class="ribbon-title"><span class="ribbon-logo"></span>Regional Monitoring Footprints</span>
 
     <div class="ribbon-controls">
       <div class="ribbon-dropdown" id="programs-dropdown">
@@ -427,11 +712,11 @@
 
       <div class="ribbon-dropdown" id="basemap-dropdown">
         <button type="button" class="ribbon-dropdown-trigger" id="basemap-trigger" aria-haspopup="true" aria-expanded="false">
-          Map · Standard <span class="ribbon-dropdown-chevron">▼</span>
+          Map · Light grey <span class="ribbon-dropdown-chevron">▼</span>
         </button>
         <div class="ribbon-dropdown-panel">
-          <button type="button" class="dropdown-option active" data-basemap="standard">Standard</button>
-          <button type="button" class="dropdown-option" data-basemap="light">Light</button>
+          <button type="button" class="dropdown-option" data-basemap="standard">Standard</button>
+          <button type="button" class="dropdown-option active" data-basemap="light">Light grey</button>
           <button type="button" class="dropdown-option" data-basemap="terrain">Terrain</button>
         </div>
       </div>
@@ -449,6 +734,25 @@
           </label>
         </div>
       </div>
+
+      <div class="ribbon-dropdown" id="filter-dropdown">
+        <button type="button" class="ribbon-dropdown-trigger" id="filter-trigger" aria-haspopup="true" aria-expanded="false">
+          Filter · All <span class="ribbon-dropdown-chevron">▼</span>
+        </button>
+        <div class="ribbon-dropdown-panel" id="filter-panel">
+          <label class="dropdown-check">
+            <input type="checkbox" id="filter-select-all" checked /> All regional boards
+          </label>
+          <div class="dropdown-divider"></div>
+          <div id="board-list">
+            <div class="filter-empty-note">Loading regional boards…</div>
+          </div>
+        </div>
+      </div>
+
+      <span class="ribbon-sep"></span>
+      <button type="button" class="ribbon-btn" id="about-btn">About</button>
+      <button type="button" class="ribbon-btn ribbon-btn-accent" id="summary-btn">Summary</button>
     </div>
 
     <div class="ribbon-status" id="status">Loading…</div>
@@ -466,6 +770,43 @@
     </div>
     <div class="detail-body" id="detail-body"></div>
   </aside>
+
+  <aside class="summary-drawer" id="summary-drawer" aria-hidden="true">
+    <div class="detail-header">
+      <div>
+        <h2 id="summary-title">Program summary</h2>
+        <div class="meta" id="summary-meta"></div>
+      </div>
+      <button type="button" class="detail-close" id="summary-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="detail-body" id="summary-body">
+      <div id="stats-section"></div>
+      <div class="summary-nav">
+        <button type="button" class="ribbon-btn" id="summary-prev">‹ Prev</button>
+        <span id="summary-position" style="font-size:.75rem;color:var(--text-soft);"></span>
+        <button type="button" class="ribbon-btn" id="summary-next">Next ›</button>
+      </div>
+      <div id="summary-program-detail"></div>
+    </div>
+  </aside>
+
+  <div class="modal-overlay" id="welcome-modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>What this map shows</h2>
+        <button type="button" class="modal-close" id="welcome-close-x" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-tabs">
+        <button type="button" class="modal-tab active" data-tab="overview">Overview</button>
+        <button type="button" class="modal-tab" data-tab="programs">Programs</button>
+        <button type="button" class="modal-tab" data-tab="find-data">Find data</button>
+      </div>
+      <div class="modal-body" id="welcome-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn-primary" id="welcome-got-it">Got it</button>
+      </div>
+    </div>
+  </div>
 
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -520,6 +861,7 @@
     const DATA_BASE = new URL("data/geojson/", window.location.href);
     const COUNTIES_URL = new URL("data/ca_counties.geojson", window.location.href).href;
     const REGIONAL_BOARDS_URL = new URL("data/ca_regional_boards.geojson", window.location.href).href;
+    const PROFILES_URL = new URL("data/program_profiles.json", window.location.href);
 
     const BASEMAPS = {
       standard: {
@@ -530,7 +872,7 @@
         }),
       },
       light: {
-        label: "Light",
+        label: "Light grey",
         layer: L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
           subdomains: "abcd",
@@ -548,6 +890,7 @@
 
     const geoCache = new Map();
     let manifest = null;
+    let profiles = null;
     let resolutionMode = "auto";
     let manualResolution = 7;
     let activeLayers = new Map();
@@ -555,7 +898,7 @@
     let shouldFitBounds = true;
     let renderToken = 0;
     let lastRenderedResolution = null;
-    let activeBasemap = "standard";
+    let activeBasemap = "light";
     let baseTileLayer = null;
     let countyLayerGroup = null;
     let countyLabelMarkers = [];
@@ -564,6 +907,15 @@
     let regionalBoardLabelMarkers = [];
     let regionalBoardsGeoJSON = null;
     const legendExpanded = new Set();
+
+    // Regional board filter state
+    let boardGeometryByName = new Map();
+    let allBoardNames = [];
+    let selectedBoardNames = new Set();
+
+    // Summary drawer state
+    let summaryProgramIds = [];
+    let summaryIndex = 0;
 
     const map = L.map("map", { zoomControl: true }).setView([38.5, -121.5], 7);
     map.createPane("regionalBoardPane");
@@ -583,7 +935,7 @@
       activeBasemap = basemapId;
     }
 
-    setBasemap("standard");
+    setBasemap("light");
 
     function updateOverlayLabelVisibility() {
       const showCounties = map.getZoom() >= 8;
@@ -715,6 +1067,138 @@
     async function toggleRegionalBoardOverlay(show) {
       if (show) await showRegionalBoardOverlay();
       else hideRegionalBoardOverlay();
+    }
+
+    // ---- Regional board filter: simple ray-casting point-in-polygon (no turf dependency) ----
+
+    function pointInRing(point, ring) {
+      let inside = false;
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+        const xi = ring[i][0], yi = ring[i][1];
+        const xj = ring[j][0], yj = ring[j][1];
+        const intersect =
+          yi > point[1] !== yj > point[1] &&
+          point[0] < ((xj - xi) * (point[1] - yi)) / (yj - yi) + xi;
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+
+    function pointInPolygonRings(point, rings) {
+      if (!rings.length || !pointInRing(point, rings[0])) return false;
+      for (let i = 1; i < rings.length; i++) {
+        if (pointInRing(point, rings[i])) return false; // inside a hole
+      }
+      return true;
+    }
+
+    function pointInPolygonGeom(point, geometry) {
+      if (!geometry) return false;
+      if (geometry.type === "Polygon") {
+        return pointInPolygonRings(point, geometry.coordinates);
+      }
+      if (geometry.type === "MultiPolygon") {
+        return geometry.coordinates.some((rings) => pointInPolygonRings(point, rings));
+      }
+      return false;
+    }
+
+    function polygonCentroid(geometry) {
+      let ring;
+      if (geometry?.type === "Polygon") ring = geometry.coordinates[0];
+      else if (geometry?.type === "MultiPolygon") ring = geometry.coordinates[0]?.[0];
+      if (!ring || !ring.length) return null;
+      let x = 0, y = 0;
+      ring.forEach((p) => { x += p[0]; y += p[1]; });
+      return [x / ring.length, y / ring.length];
+    }
+
+    function indexBoardGeometries(geojson) {
+      boardGeometryByName = new Map();
+      allBoardNames = [];
+      (geojson.features || []).forEach((f) => {
+        const name = f.properties?.name;
+        if (!name) return;
+        boardGeometryByName.set(name, f.geometry);
+        allBoardNames.push(name);
+      });
+      allBoardNames.sort((a, b) => a.localeCompare(b));
+    }
+
+    function isBoardFilterActive() {
+      return allBoardNames.length > 0 && selectedBoardNames.size < allBoardNames.length;
+    }
+
+    function pointMatchesSelectedBoards(lon, lat) {
+      for (const name of selectedBoardNames) {
+        const geom = boardGeometryByName.get(name);
+        if (geom && pointInPolygonGeom([lon, lat], geom)) return true;
+      }
+      return false;
+    }
+
+    function featureMatchesBoardFilter(feature) {
+      if (!isBoardFilterActive()) return true;
+      const props = feature.properties || {};
+      const stations = props.stations || [];
+      if (stations.length) {
+        return stations.some(
+          (s) => Number.isFinite(s.lat) && Number.isFinite(s.lon) && pointMatchesSelectedBoards(s.lon, s.lat)
+        );
+      }
+      // Area/wetland hexes without stations — fall back to hex polygon centroid.
+      const centroid = polygonCentroid(feature.geometry);
+      if (!centroid) return true;
+      return pointMatchesSelectedBoards(centroid[0], centroid[1]);
+    }
+
+    function buildBoardFilterControls() {
+      const list = document.getElementById("board-list");
+      list.innerHTML = "";
+
+      if (!allBoardNames.length) {
+        list.innerHTML = '<div class="filter-empty-note">Regional board data unavailable.</div>';
+        return;
+      }
+
+      allBoardNames.forEach((name) => {
+        const label = document.createElement("label");
+        label.className = "dropdown-check";
+        label.innerHTML = `<input type="checkbox" name="board" value="${escapeHtml(name)}" checked /> ${escapeHtml(name)}`;
+        label.querySelector("input").addEventListener("change", () => {
+          syncBoardSelectAll();
+          updateFilterTriggerLabel();
+          renderMap();
+        });
+        list.appendChild(label);
+      });
+
+      selectedBoardNames = new Set(allBoardNames);
+      syncBoardSelectAll();
+      updateFilterTriggerLabel();
+    }
+
+    function syncBoardSelectAll() {
+      const boxes = [...document.querySelectorAll('input[name="board"]')];
+      selectedBoardNames = new Set(boxes.filter((b) => b.checked).map((b) => b.value));
+      const selectAll = document.getElementById("filter-select-all");
+      if (!boxes.length) {
+        selectAll.checked = true;
+        selectAll.indeterminate = false;
+        return;
+      }
+      const checkedCount = boxes.filter((b) => b.checked).length;
+      selectAll.checked = checkedCount === boxes.length;
+      selectAll.indeterminate = checkedCount > 0 && checkedCount < boxes.length;
+    }
+
+    function updateFilterTriggerLabel() {
+      let label;
+      if (!allBoardNames.length) label = "—";
+      else if (selectedBoardNames.size === allBoardNames.length) label = "All";
+      else if (selectedBoardNames.size === 0) label = "None";
+      else label = `${selectedBoardNames.size}/${allBoardNames.length}`;
+      setDropdownTriggerText("filter-trigger", "Filter", label);
     }
 
     function resolutionForZoom(zoom) {
@@ -877,13 +1361,25 @@
             ? `${meta.polygon_count?.toLocaleString()} wetland polygons`
             : `${meta.station_count} stations in cleaned data`
           : "No features passed build filtering — check PROGRAM_METADATA bounds in build_h3_geojson.py";
-        label.innerHTML = `<input type="checkbox" name="program" value="${programId}" ${hasStations ? "checked" : "disabled"} /> ${escapeHtml(meta.label)}${countLabel}`;
+        label.innerHTML = `
+          <span class="program-check-main">
+            <input type="checkbox" name="program" value="${programId}" ${hasStations ? "checked" : "disabled"} />
+            <span class="program-check-label">${escapeHtml(meta.label)}${countLabel}</span>
+          </span>
+          <button type="button" class="info-btn" data-program="${programId}" title="View summary" aria-label="View summary for ${escapeHtml(meta.label)}">ⓘ</button>
+        `;
         applyProgramControlStyle(label, programId);
-        label.querySelector("input").addEventListener("change", () => {
+        label.querySelector('input[name="program"]').addEventListener("change", () => {
           syncSelectAll();
           updateProgramsTriggerLabel();
           shouldFitBounds = true;
           renderMap();
+        });
+        label.querySelector(".info-btn").addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          closeAllDropdowns();
+          openSummaryDrawer(programId);
         });
         list.appendChild(label);
       });
@@ -907,6 +1403,17 @@
       }
     }
 
+    async function loadProfiles() {
+      try {
+        const response = await fetch(PROFILES_URL);
+        if (!response.ok) throw new Error(`Failed to load program profiles (${response.status})`);
+        profiles = await response.json();
+      } catch (err) {
+        console.error(err);
+        profiles = null;
+      }
+    }
+
     async function loadGeoJSON(programId, resolution) {
       const key = `${programId}_r${resolution}`;
       if (geoCache.has(key)) return geoCache.get(key);
@@ -927,6 +1434,7 @@
     }
 
     function openDetailPanel(feature) {
+      closeSummaryDrawer();
       const props = feature.properties;
       const resLabel = RES_LABELS[props.resolution] || `r${props.resolution}`;
       const stations = props.stations || [];
@@ -951,7 +1459,7 @@
           });
           html += "</tbody></table>";
           if (stations.length) {
-            html += "<hr style='margin:12px 0;border:none;border-top:1px solid #e2e8f0' />";
+            html += "<hr style='margin:12px 0;border:none;border-top:1px solid var(--border)' />";
           } else {
             document.getElementById("detail-body").innerHTML = html;
             document.getElementById("detail-panel").classList.add("open");
@@ -982,9 +1490,12 @@
         if (props.wetland_summary) {
           html += `<tr><th>Wetland types</th><td>${escapeHtml(props.wetland_summary)}</td></tr>`;
         }
+        const wetlandNote =
+          profiles?.programs?.[props.program_id]?.wetland_meaning ||
+          "Each hex counts RRARI wetland inventory polygons that intersect that hex — not water-sample stations monitored inside that hex.";
         html += `</tbody></table>
-          <p style="margin-top:10px;font-size:0.78rem;color:#64748b;">
-            Area coverage from RRARI wetland polygons — individual sample station coordinates are not available for this program.
+          <p style="margin-top:10px;font-size:0.78rem;color:var(--text-soft);">
+            ${escapeHtml(wetlandNote)}
           </p>`;
         document.getElementById("detail-body").innerHTML = html;
         document.getElementById("detail-panel").classList.add("open");
@@ -1172,7 +1683,7 @@
 
       overlapLayer.eachLayer((layer) => {
         const patternId = layer.feature?.properties?.pattern_id;
-        if (patternId) {
+        if (patternId && featureMatchesBoardFilter(layer.feature)) {
           layer.setStyle({
             fillColor: `url(#${patternId})`,
             fillOpacity: 1,
@@ -1195,17 +1706,28 @@
         { type: "FeatureCollection", features },
         {
           pane: "hexPane",
-          style: (feature) => ({
-            fillColor: colorForCount(
-              feature.properties.station_count,
-              breaks,
-              styleConfig.palettes
-            ),
-            weight: 1,
-            opacity: 0.85,
-            color: styleConfig.stroke,
-            fillOpacity: selectedPrograms().length > 1 ? 0.55 : 0.65,
-          }),
+          style: (feature) => {
+            if (!featureMatchesBoardFilter(feature)) {
+              return {
+                fillColor: "#cbd5e1",
+                weight: 1,
+                opacity: 0.4,
+                color: "#94a3b8",
+                fillOpacity: 0.18,
+              };
+            }
+            return {
+              fillColor: colorForCount(
+                feature.properties.station_count,
+                breaks,
+                styleConfig.palettes
+              ),
+              weight: 1,
+              opacity: 0.85,
+              color: styleConfig.stroke,
+              fillOpacity: selectedPrograms().length > 1 ? 0.55 : 0.65,
+            };
+          },
           onEachFeature: (feature, layer) => {
             layer.on("click", (e) => {
               L.DomEvent.stopPropagation(e);
@@ -1215,7 +1737,8 @@
             const tooltipCount = coverage_type === "area"
               ? `${polygon_count ?? station_count} wetland polygon(s)`
               : `${station_count} station(s)`;
-            layer.bindTooltip(`${program}: ${tooltipCount}`, { sticky: true });
+            const matchNote = featureMatchesBoardFilter(feature) ? "" : " (outside board filter)";
+            layer.bindTooltip(`${program}: ${tooltipCount}${matchNote}`, { sticky: true });
           },
         }
       );
@@ -1228,13 +1751,24 @@
         { type: "FeatureCollection", features: overlapFeatures },
         {
           pane: "overlapHexPane",
-          style: (feature) => ({
-            fillColor: `url(#${feature.properties.pattern_id})`,
-            fillOpacity: 1,
-            weight: 2,
-            color: "#1e293b",
-            opacity: 0.95,
-          }),
+          style: (feature) => {
+            if (!featureMatchesBoardFilter(feature)) {
+              return {
+                fillColor: "#cbd5e1",
+                fillOpacity: 0.18,
+                weight: 1,
+                color: "#94a3b8",
+                opacity: 0.4,
+              };
+            }
+            return {
+              fillColor: `url(#${feature.properties.pattern_id})`,
+              fillOpacity: 1,
+              weight: 2,
+              color: "#1e293b",
+              opacity: 0.95,
+            };
+          },
           onEachFeature: (feature, layer) => {
             layer.on("click", (e) => {
               L.DomEvent.stopPropagation(e);
@@ -1281,6 +1815,14 @@
           row.style.padding = "8px 10px";
           row.innerHTML =
             '<span class="legend-swatch legend-swatch-hatch"></span>Overlapping programs';
+        }
+
+        if (isBoardFilterActive()) {
+          const block = L.DomUtil.create("div", "legend-block", panel);
+          const row = L.DomUtil.create("div", "legend-row", block);
+          row.style.padding = "8px 10px";
+          row.innerHTML =
+            '<span class="legend-swatch legend-swatch-gray"></span>Outside board filter';
         }
 
         layerStats.forEach(({ programId, breaks }) => {
@@ -1355,6 +1897,7 @@
         activeLayers.clear();
         statusEl.textContent = "Select at least one program.";
         closeDetailPanel();
+        renderStatsSection();
         return;
       }
 
@@ -1428,8 +1971,11 @@
           : RES_LABELS[resolution];
 
         const overlapNote = overlapCount ? ` · ${overlapCount} overlap hexes` : "";
+        const filterNote = isBoardFilterActive()
+          ? ` · Filter: ${selectedBoardNames.size}/${allBoardNames.length} boards`
+          : "";
         statusEl.textContent =
-          `${programs.length} program(s) · ${modeLabel} · ${totalStations} stations in ${totalHexes} hexes${overlapNote}`;
+          `${programs.length} program(s) · ${modeLabel} · ${totalStations} stations in ${totalHexes} hexes${overlapNote}${filterNote}`;
 
         lastRenderedResolution = resolution;
         updateHexTriggerLabel();
@@ -1441,6 +1987,8 @@
           }
           shouldFitBounds = false;
         }
+
+        renderStatsSection();
       } catch (err) {
         statusEl.textContent = `Error: ${err.message}`;
         console.error(err);
@@ -1522,6 +2070,16 @@
       }
     });
 
+    document.getElementById("filter-select-all").addEventListener("change", (e) => {
+      const checked = e.target.checked;
+      document.querySelectorAll('input[name="board"]').forEach((box) => {
+        box.checked = checked;
+      });
+      syncBoardSelectAll();
+      updateFilterTriggerLabel();
+      renderMap();
+    });
+
     map.on("zoomend", () => {
       updateOverlayLabelVisibility();
       if (resolutionMode !== "auto") return;
@@ -1532,11 +2090,271 @@
     map.on("click", closeDetailPanel);
     document.getElementById("detail-close").addEventListener("click", closeDetailPanel);
 
+    // ---- Summary browser drawer ----
+
+    function summaryProgramOrder() {
+      if (!profiles?.programs) return [];
+      return Object.keys(profiles.programs);
+    }
+
+    function renderStatsSection() {
+      const container = document.getElementById("stats-section");
+      if (!container) return;
+      const programs = selectedPrograms();
+
+      if (!manifest) {
+        container.innerHTML = '<p style="color:var(--text-soft);font-size:.8rem;">Waiting for map data…</p>';
+        return;
+      }
+      if (!programs.length) {
+        container.innerHTML = '<p style="color:var(--text-soft);font-size:.8rem;">Select at least one program to see stats.</p>';
+        return;
+      }
+
+      const filterActive = isBoardFilterActive();
+      const filterLabel = filterActive ? ` · filtered by ${selectedBoardNames.size}/${allBoardNames.length} boards` : "";
+
+      const rows = programs.map((id) => {
+        const meta = manifest.programs[id] || {};
+        const profile = profiles?.programs?.[id];
+        const style = ensureProgramStyle(id, meta.label);
+        const isArea = meta.coverage_type === "area";
+        const count = isArea ? meta.polygon_count : meta.station_count;
+        const countLabel = isArea ? "wetland polygons" : "stations";
+        const themes = profile?.data_themes?.slice(0, 2).join("; ") || "—";
+        const fresh = profile?.freshness || {};
+        let freshLabel = "—";
+        if (fresh.date_min || fresh.date_max) {
+          freshLabel = `${(fresh.date_min || "?").slice(0, 4)}–${(fresh.date_max || "?").slice(0, 4)}`;
+        } else if (fresh.year_min || fresh.year_max) {
+          freshLabel = `${fresh.year_min || "?"}–${fresh.year_max || "?"}`;
+        }
+        const apiAvailable = profile?.api?.available;
+        const apiCell = apiAvailable
+          ? `<a href="${profile.api.url}" target="_blank" rel="noopener">Yes</a>`
+          : "No";
+
+        return `<tr>
+          <td style="color:${style.stroke};font-weight:600;">${escapeHtml(style.label)}</td>
+          <td>${count != null ? count.toLocaleString() : "—"} ${countLabel}</td>
+          <td>${escapeHtml(meta.coverage_type || "—")}</td>
+          <td>${escapeHtml(themes)}</td>
+          <td>${escapeHtml(freshLabel)}</td>
+          <td>${apiCell}</td>
+        </tr>`;
+      }).join("");
+
+      container.innerHTML = `
+        <div class="stats-heading">Selected programs${filterLabel}</div>
+        <table class="station-table">
+          <thead><tr><th>Program</th><th>Count</th><th>Coverage</th><th>Themes</th><th>Freshness</th><th>API</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function renderWelcomeOverview() {
+      const intro = profiles?.map_intro;
+      if (!intro) return "<p>Program profile data is unavailable right now, but the map below still works — pick programs from the Programs menu to explore station footprints.</p>";
+      return `
+        <p>${escapeHtml(intro.summary)}</p>
+        <p>${escapeHtml(intro.comparable_why)}</p>
+        <p style="color:var(--text-soft);font-size:0.8rem;border-top:1px solid var(--border);padding-top:12px;margin-top:14px;">${escapeHtml(intro.honesty_note)}</p>
+      `;
+    }
+
+    function renderWelcomePrograms() {
+      if (!profiles?.programs) return "<p>Program profile data is unavailable right now.</p>";
+      return Object.values(profiles.programs).map((p) => `
+        <div class="profile-card" data-program="${p.id}">
+          <h4>${escapeHtml(p.short_label || p.label)}</h4>
+          <p>${escapeHtml(p.summary)}</p>
+        </div>
+      `).join("");
+    }
+
+    function renderWelcomeFindData() {
+      const fd = profiles?.find_data;
+      if (!fd) return "<p>Program profile data is unavailable right now.</p>";
+      const notes = (fd.notes || []).map((n) => `<li>${escapeHtml(n)}</li>`).join("");
+      return `
+        <p>Several programs on this map appear in the CEDEN Query Tool's <strong>Program</strong> filter — see each program's page in the Summary browser for its exact CEDEN program name.</p>
+        <p>
+          <a href="${fd.ceden_query_tool}" target="_blank" rel="noopener">CEDEN Query Tool</a> ·
+          <a href="${fd.ceden_find_data}" target="_blank" rel="noopener">CEDEN find-data guide</a> ·
+          <a href="${fd.open_data_portal_search}" target="_blank" rel="noopener">data.ca.gov CEDEN search</a>
+        </p>
+        <p style="font-weight:600;margin-top:14px;margin-bottom:4px;">Example web-service query pattern</p>
+        <div class="code-block">${escapeHtml(fd.example_service_base + fd.example_query_pattern)}</div>
+        <ul style="margin:12px 0 0 18px;font-size:0.8rem;color:var(--text-soft);line-height:1.6;">${notes}</ul>
+      `;
+    }
+
+    function setWelcomeTab(tab) {
+      document.querySelectorAll(".modal-tab").forEach((t) => t.classList.toggle("active", t.dataset.tab === tab));
+      const body = document.getElementById("welcome-body");
+      if (tab === "overview") body.innerHTML = renderWelcomeOverview();
+      else if (tab === "programs") body.innerHTML = renderWelcomePrograms();
+      else body.innerHTML = renderWelcomeFindData();
+
+      if (tab === "programs") {
+        body.querySelectorAll(".profile-card").forEach((card) => {
+          card.addEventListener("click", () => {
+            closeWelcomeModal();
+            openSummaryDrawer(card.dataset.program);
+          });
+        });
+      }
+    }
+
+    function openWelcomeModal() {
+      const modal = document.getElementById("welcome-modal");
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+      setWelcomeTab("overview");
+    }
+
+    function closeWelcomeModal() {
+      const modal = document.getElementById("welcome-modal");
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+    }
+
+    function renderSummaryProgram() {
+      const body = document.getElementById("summary-program-detail");
+      const posEl = document.getElementById("summary-position");
+
+      if (!summaryProgramIds.length) {
+        body.innerHTML = "<p style='color:var(--text-soft);font-size:.85rem;'>Program profile data is unavailable right now.</p>";
+        posEl.textContent = "";
+        document.getElementById("summary-title").textContent = "Program summary";
+        document.getElementById("summary-meta").textContent = "";
+        return;
+      }
+
+      const id = summaryProgramIds[summaryIndex];
+      const p = profiles.programs[id];
+      posEl.textContent = `${summaryIndex + 1} / ${summaryProgramIds.length}`;
+      document.getElementById("summary-title").textContent = p.label;
+      document.getElementById("summary-meta").textContent =
+        `${p.short_label || ""}${p.coverage_type === "area" ? " · Area coverage" : " · Station-based"}`;
+
+      const themes = (p.data_themes || []).map((t) => `<li>${escapeHtml(t)}</li>`).join("");
+      const links = (p.data_links || [])
+        .map((l) => `<a href="${l.url}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
+        .join(" · ");
+      const fresh = p.freshness || {};
+      let freshText = "—";
+      if (fresh.date_min || fresh.date_max) freshText = `${fresh.date_min || "?"} – ${fresh.date_max || "?"}`;
+      else if (fresh.year_min || fresh.year_max) freshText = `${fresh.year_min || "?"} – ${fresh.year_max || "?"}`;
+
+      let wetlandBlock = "";
+      if (p.wetland_meaning) {
+        wetlandBlock = `<p style="margin-top:10px;"><strong>What the hex counts mean:</strong> ${escapeHtml(p.wetland_meaning)}</p>`;
+      }
+
+      const api = p.api || {};
+      const apiRow = api.available
+        ? `<div class="code-block">${escapeHtml(api.url || "")}</div>
+           <button type="button" class="ribbon-btn" id="summary-copy-api" style="margin-top:8px;">Copy API URL</button>`
+        : `<p style="color:var(--text-soft);font-size:0.8rem;">${escapeHtml(api.note || "No direct API is available for this program — use the links above.")}</p>`;
+
+      body.innerHTML = `
+        <p>${escapeHtml(p.summary)}</p>
+        <p style="color:var(--text-soft);"><strong>Why it's on this map:</strong> ${escapeHtml(p.why_on_map)}</p>
+        ${wetlandBlock}
+        <table class="station-table" style="margin-top:12px;">
+          <tbody>
+            <tr><th>Data themes</th><td><ul style="margin:0 0 0 16px;padding:0;">${themes}</ul></td></tr>
+            <tr><th>Freshness</th><td>${escapeHtml(freshText)}${fresh.note ? `<br><span style="color:var(--text-soft);font-size:0.75rem;">${escapeHtml(fresh.note)}</span>` : ""}</td></tr>
+            <tr><th>CEDEN program name</th><td>${escapeHtml(p.ceden_program_name || "—")}</td></tr>
+            <tr><th>Website</th><td>${p.website ? `<a href="${p.website}" target="_blank" rel="noopener">${escapeHtml(p.website)}</a>` : "—"}</td></tr>
+            <tr><th>Data links</th><td>${links || "—"}</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:14px;font-weight:600;">API access</p>
+        ${apiRow}
+      `;
+
+      const copyBtn = document.getElementById("summary-copy-api");
+      if (copyBtn) {
+        copyBtn.addEventListener("click", () => {
+          navigator.clipboard?.writeText(api.url || "").then(() => {
+            copyBtn.textContent = "Copied!";
+            setTimeout(() => { copyBtn.textContent = "Copy API URL"; }, 1500);
+          });
+        });
+      }
+    }
+
+    function openSummaryDrawer(programId) {
+      closeDetailPanel();
+      summaryProgramIds = summaryProgramOrder();
+      if (programId && summaryProgramIds.includes(programId)) {
+        summaryIndex = summaryProgramIds.indexOf(programId);
+      } else if (summaryIndex >= summaryProgramIds.length) {
+        summaryIndex = 0;
+      }
+      renderStatsSection();
+      renderSummaryProgram();
+      const drawer = document.getElementById("summary-drawer");
+      drawer.classList.add("open");
+      drawer.setAttribute("aria-hidden", "false");
+    }
+
+    function closeSummaryDrawer() {
+      const drawer = document.getElementById("summary-drawer");
+      drawer.classList.remove("open");
+      drawer.setAttribute("aria-hidden", "true");
+    }
+
+    document.getElementById("summary-prev").addEventListener("click", () => {
+      if (!summaryProgramIds.length) return;
+      summaryIndex = (summaryIndex - 1 + summaryProgramIds.length) % summaryProgramIds.length;
+      renderSummaryProgram();
+    });
+    document.getElementById("summary-next").addEventListener("click", () => {
+      if (!summaryProgramIds.length) return;
+      summaryIndex = (summaryIndex + 1) % summaryProgramIds.length;
+      renderSummaryProgram();
+    });
+    document.getElementById("summary-close").addEventListener("click", closeSummaryDrawer);
+    document.getElementById("summary-btn").addEventListener("click", () => openSummaryDrawer());
+
+    document.getElementById("about-btn").addEventListener("click", openWelcomeModal);
+    document.getElementById("welcome-close-x").addEventListener("click", closeWelcomeModal);
+    document.getElementById("welcome-got-it").addEventListener("click", closeWelcomeModal);
+    document.getElementById("welcome-modal").addEventListener("click", (e) => {
+      if (e.target.id === "welcome-modal") closeWelcomeModal();
+    });
+    document.querySelectorAll(".modal-tab").forEach((t) => {
+      t.addEventListener("click", () => setWelcomeTab(t.dataset.tab));
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      const welcome = document.getElementById("welcome-modal");
+      if (welcome.classList.contains("open")) {
+        closeWelcomeModal();
+        return;
+      }
+      const summary = document.getElementById("summary-drawer");
+      if (summary.classList.contains("open")) {
+        closeSummaryDrawer();
+        return;
+      }
+      closeDetailPanel();
+    });
+
     (async function init() {
       setupDropdowns();
       updateHexTriggerLabel();
       updateBasemapTriggerLabel();
       updateOverlaysTriggerLabel();
+      updateFilterTriggerLabel();
+
+      const profilesPromise = loadProfiles();
+
       try {
         await loadManifest();
         buildProgramControls();
@@ -1545,6 +2363,18 @@
         document.getElementById("status").textContent = `Error: ${err.message}`;
         console.error(err);
       }
+
+      try {
+        const boardsGeo = await ensureRegionalBoardsLoaded();
+        indexBoardGeometries(boardsGeo);
+        buildBoardFilterControls();
+      } catch (err) {
+        console.error("Regional boards failed to load for filter:", err);
+      }
+
+      await profilesPromise;
+      renderStatsSection();
+      openWelcomeModal();
     })();
   </script>
 </body>

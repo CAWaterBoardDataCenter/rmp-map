@@ -1,0 +1,231 @@
+{
+  "map_intro": {
+    "title": "What this map shows",
+    "summary": "This map shows where six California regional water monitoring programs work — not lab results over time. Station locations (and, for Russian River, wetland inventory polygons) are rolled into H3 hex grids so you can compare footprints at about 5 km, 3 km, and 1 km.",
+    "comparable_why": "Programs differ in design and data systems, but each layer answers the same spatial question: where does this program observe the landscape? Hex grids put those footprints on a common grid so overlaps and gaps are easier to see. Chemistry result values are not mapped here.",
+    "honesty_note": "Most CEDEN layers on this map come from Water Quality (Chemistry) downloads used to locate stations. Separate CEDEN categories such as toxicity, tissue, benthic, or habitat were not pulled into this build. Klamath Basin uses KBMP’s station metadata spreadsheet. Russian River uses RRARI wetland polygons, not sample stations."
+  },
+  "find_data": {
+    "ceden_query_tool": "https://ceden.waterboards.ca.gov/CQT/Home/AqtTool",
+    "ceden_find_data": "https://ceden.waterboards.ca.gov/find-data.html",
+    "open_data_portal_search": "https://data.ca.gov/dataset/?q=CEDEN",
+    "chemistry_open_data": "https://data.ca.gov/dataset/surface-water-chemistry-results",
+    "notes": [
+      "Yes — several of these programs appear in CEDEN under the Program filter (exact names listed per program below).",
+      "data.ca.gov hosts yearly CEDEN bulk files and APIs by data category (chemistry, toxicity, etc.). Those portals do not filter cleanly by Program the way the CEDEN Query Tool does.",
+      "The example URLs below show how CEDEN web services accept JSON-style filters. They are starting points for developers, not live buttons that download this map’s full chemistry extracts."
+    ],
+    "example_service_base": "https://cedenwebservices.waterboards.ca.gov:9267/cedenwaterqualityresultslist/",
+    "example_query_pattern": "?queryParams={\"filter\":[{\"program\":\"PROGRAM_NAME_HERE\"}],\"top\":1000}"
+  },
+  "programs": {
+    "delta": {
+      "id": "delta",
+      "label": "Delta Regional Monitoring Program",
+      "short_label": "Delta",
+      "coverage_type": "stations",
+      "summary": "Coordinates water-quality monitoring across the Sacramento–San Joaquin Delta so managers can track contaminants and conventional water-quality conditions in a shared regional frame.",
+      "why_on_map": "Mapped as unique station locations from a CEDEN chemistry export for this program — a spatial footprint of where Delta RMP samples have been collected.",
+      "data_themes": [
+        "Field measurements (temperature, DO, pH, conductivity)",
+        "Nutrients and organic carbon",
+        "Pesticides",
+        "Metals and other chemistry analytes"
+      ],
+      "acquisition": "CEDEN Query Tool → Category: Water Quality (Chemistry) → Program: Delta Regional Monitoring Program → No QC data",
+      "ceden_program_name": "Delta Regional Monitoring Program",
+      "website": "https://deltarmp.org/",
+      "data_links": [
+        { "label": "CEDEN Query Tool", "url": "https://ceden.waterboards.ca.gov/CQT/Home/AqtTool" },
+        { "label": "Program website", "url": "https://deltarmp.org/" }
+      ],
+      "regional_boards": ["Central Valley", "San Francisco Bay"],
+      "freshness": {
+        "source": "SAMPLEDATE in local CEDEN chemistry extract",
+        "date_min": "2015-04-06",
+        "date_max": "2024-09-11",
+        "note": "Date range derived from the chemistry file used to build this footprint (not a live feed)."
+      },
+      "api": {
+        "available": true,
+        "kind": "CEDEN web service example",
+        "url": "https://cedenwebservices.waterboards.ca.gov:9267/cedenwaterqualityresultslist/?queryParams={\"filter\":[{\"program\":\"Delta Regional Monitoring Program\"}],\"top\":1000}",
+        "open_data": "https://data.ca.gov/dataset/surface-water-chemistry-results"
+      }
+    },
+    "sf_bay": {
+      "id": "sf_bay",
+      "label": "San Francisco Bay RMP",
+      "short_label": "SF Bay",
+      "coverage_type": "stations",
+      "summary": "Long-running regional program (led with SFEI partners) that monitors contaminants and related water-quality conditions in San Francisco Bay to support management decisions.",
+      "why_on_map": "Hexes show unique station locations from the CEDEN chemistry export for SF Bay Regional Monitoring for Water Quality.",
+      "data_themes": [
+        "Metals in water and sediment",
+        "Organic contaminants (including PCBs)",
+        "Pesticides",
+        "Field and conventional chemistry"
+      ],
+      "acquisition": "CEDEN Query Tool → Category: Water Quality (Chemistry) → Program: SF Bay Regional Monitoring for Water Quality → No QC data",
+      "ceden_program_name": "SF Bay Regional Monitoring for Water Quality",
+      "website": "https://www.sfei.org/programs/rmp",
+      "data_links": [
+        { "label": "CEDEN Query Tool", "url": "https://ceden.waterboards.ca.gov/CQT/Home/AqtTool" },
+        { "label": "SFEI RMP", "url": "https://www.sfei.org/programs/rmp" }
+      ],
+      "regional_boards": ["San Francisco Bay", "Central Valley"],
+      "freshness": {
+        "source": "SAMPLEDATE in local CEDEN chemistry extract",
+        "date_min": "1950-01-01",
+        "date_max": "2023-10-03",
+        "note": "Range from a large sample of the local chemistry extract; earliest dates may include legacy records."
+      },
+      "api": {
+        "available": true,
+        "kind": "CEDEN web service example",
+        "url": "https://cedenwebservices.waterboards.ca.gov:9267/cedenwaterqualityresultslist/?queryParams={\"filter\":[{\"program\":\"SF Bay Regional Monitoring for Water Quality\"}],\"top\":1000}",
+        "open_data": "https://data.ca.gov/dataset/surface-water-chemistry-results"
+      }
+    },
+    "klamath_basin": {
+      "id": "klamath_basin",
+      "label": "Klamath Basin Monitoring Program",
+      "short_label": "Klamath Basin",
+      "coverage_type": "stations",
+      "summary": "Collaborative basin program that tracks monitoring locations across the Klamath system. Station metadata is maintained by KBMP and is broader than what appears under the CEDEN program name alone.",
+      "why_on_map": "Footprint comes from KBMP’s monitoring-locations spreadsheet (thousands of sites). CEDEN under “Klamath Basin Monitoring Program” lists far fewer stations — a known coverage gap.",
+      "data_themes": [
+        "Sonde / continuous field measurements",
+        "Conventional water quality",
+        "Water temperature probes and flow",
+        "Sediment, algae, fisheries, and bacterial parameters (per KBMP Parameter Group)"
+      ],
+      "acquisition": "KBMP Monitoring Location Metadata spreadsheet from kbmp.net / EcoAtlas (not a CEDEN chemistry TSV for the primary footprint)",
+      "ceden_program_name": "Klamath Basin Monitoring Program",
+      "website": "https://kbmp.net/",
+      "data_links": [
+        { "label": "KBMP maps and data", "url": "https://kbmp.net/maps-and-data/monitoring-locations" },
+        { "label": "EcoAtlas KBMP map", "url": "https://kbmp.ecoatlas.org/map.php" },
+        { "label": "CEDEN Query Tool (partial)", "url": "https://ceden.waterboards.ca.gov/CQT/Home/AqtTool" }
+      ],
+      "regional_boards": ["North Coast", "Central Valley"],
+      "freshness": {
+        "source": "Sampling Year in KBMP metadata spreadsheet",
+        "date_min": null,
+        "date_max": null,
+        "year_min": 2015,
+        "year_max": 2024,
+        "note": "Year span from KBMP Parameter Group metadata rows (not a live API)."
+      },
+      "api": {
+        "available": false,
+        "kind": "Program-hosted metadata + contacts",
+        "url": null,
+        "open_data": "https://data.ca.gov/dataset/?q=CEDEN",
+        "note": "Prefer KBMP links and data contacts. CEDEN coverage for this program is incomplete relative to KBMP’s station list."
+      }
+    },
+    "smc": {
+      "id": "smc",
+      "label": "Stormwater Monitoring Coalition",
+      "short_label": "SMC",
+      "coverage_type": "stations",
+      "summary": "Southern California stormwater coalition that coordinates fixed-site monitoring to support regional stormwater management. Public site data links can be unreliable; CEDEN remains the practical download path used here.",
+      "why_on_map": "Unique stations from the CEDEN chemistry export for Southern CA Stormwater Monitoring Coalition.",
+      "data_themes": [
+        "Field measurements and conventional chemistry",
+        "Metals",
+        "Nutrients",
+        "Pesticides and related chemistry",
+        "Some sediment / benthic matrix rows in the chemistry extract"
+      ],
+      "acquisition": "CEDEN Query Tool → Category: Water Quality (Chemistry) → Program: Southern CA Stormwater Monitoring Coalition → No QC data",
+      "ceden_program_name": "Southern CA Stormwater Monitoring Coalition",
+      "website": "https://socalsmc.org/",
+      "data_links": [
+        { "label": "CEDEN Query Tool", "url": "https://ceden.waterboards.ca.gov/CQT/Home/AqtTool" },
+        { "label": "SMC website", "url": "https://socalsmc.org/" }
+      ],
+      "regional_boards": ["Los Angeles", "San Diego", "Santa Ana"],
+      "freshness": {
+        "source": "SAMPLEDATE in local CEDEN chemistry extract",
+        "date_min": "2008-05-05",
+        "date_max": "2025-05-21",
+        "note": "Date range derived from the chemistry file used to build this footprint (not a live feed)."
+      },
+      "api": {
+        "available": true,
+        "kind": "CEDEN web service example",
+        "url": "https://cedenwebservices.waterboards.ca.gov:9267/cedenwaterqualityresultslist/?queryParams={\"filter\":[{\"program\":\"Southern CA Stormwater Monitoring Coalition\"}],\"top\":1000}",
+        "open_data": "https://data.ca.gov/dataset/surface-water-chemistry-results"
+      }
+    },
+    "bight": {
+      "id": "bight",
+      "label": "Southern California Bight",
+      "short_label": "Bight",
+      "coverage_type": "stations",
+      "summary": "Periodic regional surveys of the Southern California Bight that revisit the coastal ocean and embayments on a multi-year cycle. Station lists differ by survey batch year.",
+      "why_on_map": "Unique stations from the CEDEN chemistry export, with batch_year retained so survey vintages stay visible in hex detail.",
+      "data_themes": [
+        "Survey chemistry across Bight batches",
+        "Field and conventional measurements",
+        "Metals and organic contaminants (varies by batch)"
+      ],
+      "acquisition": "CEDEN Query Tool → Category: Water Quality (Chemistry) → Program: Southern California Bight Program → No QC data",
+      "ceden_program_name": "Southern California Bight Program",
+      "website": "https://www.sccwrp.org/",
+      "data_links": [
+        { "label": "CEDEN Query Tool", "url": "https://ceden.waterboards.ca.gov/CQT/Home/AqtTool" },
+        { "label": "SCCWRP", "url": "https://www.sccwrp.org/" },
+        { "label": "SCCWRP data portal", "url": "https://dataportal.sccwrp.org/" }
+      ],
+      "regional_boards": ["Los Angeles", "Santa Ana", "San Diego"],
+      "freshness": {
+        "source": "SAMPLEDATE / batch_year in local extracts",
+        "date_min": "1994-07-13",
+        "date_max": "2025-09-24",
+        "note": "Date range from a large sample of the local chemistry extract; stations also carry survey batch_year."
+      },
+      "api": {
+        "available": true,
+        "kind": "CEDEN web service example",
+        "url": "https://cedenwebservices.waterboards.ca.gov:9267/cedenwaterqualityresultslist/?queryParams={\"filter\":[{\"program\":\"Southern California Bight Program\"}],\"top\":1000}",
+        "open_data": "https://data.ca.gov/dataset/surface-water-chemistry-results"
+      }
+    },
+    "russian_river": {
+      "id": "russian_river",
+      "label": "Russian River (RRARI wetlands)",
+      "short_label": "Russian River",
+      "coverage_type": "area",
+      "summary": "Unlike the other programs, this layer is not a set of water-sample stations. It uses RRARI wetland habitat polygons to show where wetland resources have been inventoried in the Russian River region.",
+      "why_on_map": "CEDEN under Russian River MS4 has very few unique stations. RRARI provides a meaningful spatial footprint for the watershed’s wetland extent.",
+      "wetland_meaning": "Each hex counts RRARI wetland polygons that intersect that hex. A count of “N wetland polygons” means N inventoried wetland features overlap the hex — not that N wetlands are each monitored with water samples inside that hex. Attribute summaries (level 1 / wetland type) describe the inventory classes present. Monitoring results, if any, must be sought from program sources or CEDEN separately.",
+      "data_themes": [
+        "Wetland inventory / aquatic resource mapping (RRARI)",
+        "Not a chemistry or bioassessment results layer"
+      ],
+      "acquisition": "RRARI v1.0 Wetland Polygons geopackage from SFEI (layer RRARI_Polygons)",
+      "ceden_program_name": "Russian River MS4 Program",
+      "website": "https://www.russianriverconfluence.org/r3mp",
+      "data_links": [
+        { "label": "RRARI GIS data (SFEI)", "url": "https://www.sfei.org/data/russian-river-aquatic-resource-inventory-rrari-version-10-gis-data" },
+        { "label": "R3MP overview", "url": "https://www.russianriverconfluence.org/r3mp" },
+        { "label": "SFEI project page", "url": "https://www.sfei.org/projects/russian-river-regional-monitoring-program-comprehensive-basemap-surface-waters-and#toc-associated-data" }
+      ],
+      "regional_boards": ["North Coast"],
+      "freshness": {
+        "source": "RRARI source_data_year attributes in the geopackage",
+        "note": "Reflects inventory vintage, not ongoing sample collection."
+      },
+      "api": {
+        "available": false,
+        "kind": "Downloadable GIS dataset",
+        "url": null,
+        "open_data": null,
+        "note": "Use the SFEI RRARI download. CEDEN MS4 chemistry is sparse for footprint purposes."
+      }
+    }
+  }
+}
