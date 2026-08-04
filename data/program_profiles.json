@@ -24,7 +24,8 @@
       "label": "Delta Regional Monitoring Program",
       "short_label": "Delta",
       "coverage_type": "stations",
-      "summary": "Coordinates water-quality monitoring across the Sacramento–San Joaquin Delta so managers can track contaminants and conventional water-quality conditions in a shared regional frame.",
+      "summary": "Coordinates water-quality monitoring across the Sacramento–San Joaquin Delta so managers, dischargers, and the public share one comparable picture of contaminants and conventional water-quality conditions instead of dozens of separate permit reports.",
+      "narrative": "The Delta Regional Monitoring Program (Delta RMP) was encouraged by the Central Valley Regional Water Quality Control Board as a way to move Delta dischargers away from disconnected, permit-by-permit monitoring and toward one coordinated regional effort. It now operates as an independent non-profit — the Delta Regional Monitoring Program — that tracks conditions relevant to beneficial-use protection across the Sacramento–San Joaquin Delta. Participants include wastewater treatment agencies, stormwater permittees, agricultural coalitions, and dredgers, who together help govern the program and use its shared results to meet their individual regulatory obligations. Funding comes primarily from trades against required permit monitoring (participants redirect dollars they would otherwise spend on individual monitoring into the shared program), supplemented by grants and in-kind support from the State Water Board's Surface Water Ambient Monitoring Program (SWAMP).",
       "why_on_map": "Mapped as unique station locations from a CEDEN chemistry export for this program — a spatial footprint of where Delta RMP samples have been collected.",
       "data_themes": [
         "Field measurements (temperature, DO, pH, conductivity)",
@@ -58,7 +59,8 @@
       "label": "San Francisco Bay RMP",
       "short_label": "SF Bay",
       "coverage_type": "stations",
-      "summary": "Long-running regional program (led with SFEI partners) that monitors contaminants and related water-quality conditions in San Francisco Bay to support management decisions.",
+      "summary": "Long-running regional program administered by SFEI that monitors contaminants and related water-quality conditions in San Francisco Bay to support management decisions, replacing dozens of separate discharger monitoring programs with one shared design.",
+      "narrative": "The San Francisco Bay Regional Monitoring Program (RMP) was established in 1993 by a San Francisco Bay Regional Water Quality Control Board resolution that replaced individual, discharger-by-discharger monitoring requirements with a single shared regional program. The San Francisco Estuary Institute (SFEI) administers the RMP, coordinating sampling design, laboratory analysis, and public reporting on contaminants and water-quality conditions throughout the Bay. It is funded by the permitted dischargers required to participate — municipal and industrial wastewater agencies, stormwater management programs, and dredging permittees — who pool the resources they would otherwise spend on separate, less comparable monitoring into one regionally consistent effort.",
       "why_on_map": "Hexes show unique station locations from the CEDEN chemistry export for SF Bay Regional Monitoring for Water Quality.",
       "data_themes": [
         "Metals in water and sediment",
@@ -92,7 +94,8 @@
       "label": "Klamath Basin Monitoring Program",
       "short_label": "Klamath Basin",
       "coverage_type": "stations",
-      "summary": "Collaborative basin program that tracks monitoring locations across the Klamath system. Station metadata is maintained by KBMP and is broader than what appears under the CEDEN program name alone.",
+      "summary": "Collaborative basin network that coordinates monitoring locations and metadata across many organizations in the Klamath system. Station metadata is maintained by KBMP and is broader than what appears under the CEDEN program name alone.",
+      "narrative": "The Klamath Basin Monitoring Program (KBMP) exists to knit together the many separate monitoring efforts run by tribes, agencies, and watershed groups across the Klamath Basin into one comparable picture of basin conditions. Unlike the Bay or Delta RMPs, it is not built around a single discharger-funded model; instead KBMP functions as a collaborative network that maintains a shared monitoring-location and metadata catalog so partner organizations' individual sampling programs can be found and compared. Because there is no single permit-fee funding source, the stations mapped here are compiled from KBMP's basin-wide monitoring-location spreadsheet, and coverage reflects whichever partner organizations have contributed site metadata rather than one administering agency's dataset.",
       "why_on_map": "Footprint comes from KBMP’s monitoring-locations spreadsheet (thousands of sites). CEDEN under “Klamath Basin Monitoring Program” lists far fewer stations — a known coverage gap.",
       "data_themes": [
         "Sonde / continuous field measurements",
@@ -130,7 +133,8 @@
       "label": "Stormwater Monitoring Coalition",
       "short_label": "SMC",
       "coverage_type": "stations",
-      "summary": "Southern California stormwater coalition that coordinates fixed-site monitoring to support regional stormwater management. Public site data links can be unreliable; CEDEN remains the practical download path used here.",
+      "summary": "Southern California Stormwater Monitoring Coalition of municipal member agencies that coordinates fixed-site monitoring so stormwater conditions can be compared regionally instead of permit by permit. Public site data links can be unreliable; CEDEN remains the practical download path used here.",
+      "narrative": "The Southern California Stormwater Monitoring Coalition (SMC) was formed by the region's municipal stormwater permittees — cities, counties, and flood-control districts — to coordinate regional monitoring of urban runoff and receiving-water conditions rather than have each MS4 permittee monitor independently. Member agencies fund and govern the coalition jointly, sharing the cost of a regionally consistent monitoring design. The Southern California Coastal Water Research Project (SCCWRP) frequently provides scientific and technical support, helping design studies and analyze results, but SMC itself remains a member-agency-funded collaboration built to answer regional stormwater questions that no single permit could address alone.",
       "why_on_map": "Unique stations from the CEDEN chemistry export for Southern CA Stormwater Monitoring Coalition.",
       "data_themes": [
         "Field measurements and conventional chemistry",
@@ -165,7 +169,8 @@
       "label": "Southern California Bight",
       "short_label": "Bight",
       "coverage_type": "stations",
-      "summary": "Periodic regional surveys of the Southern California Bight that revisit the coastal ocean and embayments on a multi-year cycle. Station lists differ by survey batch year.",
+      "summary": "Periodic regional surveys of the Southern California Bight, coordinated with SCCWRP and dozens of partner agencies, that revisit the coastal ocean and embayments on a multi-year cycle. Station lists differ by survey batch year.",
+      "narrative": "The Southern California Bight Regional Monitoring Program (Bight Program) is a periodic, multi-agency survey of the coastal ocean and embayments from Point Conception to the U.S.–Mexico border, repeated on a multi-year cycle rather than continuously. It exists because no single agency's permit-driven monitoring can characterize regional-scale conditions across such a large, jurisdictionally fragmented coastline. The Southern California Coastal Water Research Project (SCCWRP) coordinates each survey cycle, working with many partner agencies — dischargers, regulators, tribes, and research institutions — who contribute funding, vessel time, sampling crews, and laboratory capacity in-kind. Because each cycle is a distinct survey with its own station list, the stations mapped here carry a batch year identifying which Bight survey they belong to.",
       "why_on_map": "Unique stations from the CEDEN chemistry export, with batch_year retained so survey vintages stay visible in hex detail.",
       "data_themes": [
         "Survey chemistry across Bight batches",
@@ -199,7 +204,8 @@
       "label": "Russian River (RRARI wetlands)",
       "short_label": "Russian River",
       "coverage_type": "area",
-      "summary": "Unlike the other programs, this layer is not a set of water-sample stations. It uses RRARI wetland habitat polygons to show where wetland resources have been inventoried in the Russian River region.",
+      "summary": "Unlike the other programs, this layer is not a set of water-sample stations. It uses RRARI wetland habitat polygons to show where wetland resources have been inventoried in the Russian River region while the region's coordinated monitoring program (R3MP) is still being built.",
+      "narrative": "The Russian River Regional Monitoring Program (R3MP) is still under development as a coordinated basin-wide monitoring framework, led by the San Francisco Estuary Institute (SFEI) with support from the North Coast Regional Water Quality Control Board and the Russian River Watershed Association (RRWA). Its goal, like other regional programs, is to replace fragmented individual monitoring efforts in the watershed with a shared design and shared data. Because R3MP's station-based chemistry network is not yet built out, the layer mapped here instead uses SFEI's Russian River Aquatic Resource Inventory (RRARI) wetland polygons — a habitat inventory, not a set of water-quality sampling stations — to give the watershed a meaningful spatial footprint while the coordinated monitoring program comes online.",
       "why_on_map": "CEDEN under Russian River MS4 has very few unique stations. RRARI provides a meaningful spatial footprint for the watershed’s wetland extent.",
       "wetland_meaning": "Each hex counts RRARI wetland polygons that intersect that hex. A count of “N wetland polygons” means N inventoried wetland features overlap the hex — not that N wetlands are each monitored with water samples inside that hex. Attribute summaries (level 1 / wetland type) describe the inventory classes present. Monitoring results, if any, must be sought from program sources or CEDEN separately.",
       "data_themes": [

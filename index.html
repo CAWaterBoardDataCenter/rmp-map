@@ -20,6 +20,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
+      --ribbon-height: 56px;
       --bg: #fdfdfc;
       --ribbon-bg: #fbfbfa;
       --ribbon-border: #e5e3df;
@@ -71,14 +72,14 @@
       box-shadow: 0 1px 4px rgba(28, 25, 23, 0.05);
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 5px 12px;
-      min-height: var(--ribbon-height, 38px);
+      gap: 10px;
+      padding: 8px 16px;
+      min-height: var(--ribbon-height, 56px);
     }
 
     .ribbon-logo {
-      width: 7px;
-      height: 7px;
+      width: 8px;
+      height: 8px;
       border-radius: 2px;
       background: var(--accent);
       display: inline-block;
@@ -86,25 +87,38 @@
     }
 
     .ribbon-title {
-      font-size: 0.76rem;
+      font-family: inherit;
+      font-size: 0.9rem;
       font-weight: 650;
       letter-spacing: -0.01em;
       white-space: nowrap;
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 8px;
+      color: var(--text);
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+      padding: 4px 6px;
+      margin: -4px -6px;
+      transition: background 0.12s ease;
+    }
+
+    .ribbon-title:hover {
+      background: var(--surface-hover);
     }
 
     .ribbon-controls {
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 6px;
       flex-wrap: wrap;
     }
 
     .ribbon-sep {
       width: 1px;
-      height: 14px;
+      height: 22px;
       background: var(--border);
       margin: 0 2px;
       flex-shrink: 0;
@@ -118,15 +132,15 @@
     .ribbon-btn {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 4px 8px;
+      gap: 6px;
+      padding: 8px 12px;
       font-family: inherit;
-      font-size: 0.68rem;
+      font-size: 0.8rem;
       font-weight: 550;
       color: var(--text);
-      background: transparent;
-      border: 1px solid transparent;
-      border-radius: 5px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
       cursor: pointer;
       white-space: nowrap;
       line-height: 1.2;
@@ -137,25 +151,32 @@
     .ribbon-dropdown-trigger:hover,
     .ribbon-btn:hover {
       background: var(--surface-hover);
-      border-color: var(--border);
+      border-color: var(--text-softer);
     }
 
     .ribbon-dropdown.open .ribbon-dropdown-trigger {
-      background: var(--surface);
-      border-color: var(--border);
+      background: var(--surface-hover);
+      border-color: var(--text-softer);
       color: var(--text);
     }
 
-    .ribbon-btn-accent {
+    .ribbon-btn-accent,
+    .ribbon-key {
       color: var(--accent-dark);
       background: var(--accent-bg);
       border-color: #99f6e4;
     }
 
-    .ribbon-btn-accent:hover {
+    .ribbon-btn-accent:hover,
+    .ribbon-key:hover {
       background: var(--accent-soft);
       border-color: #5eead4;
       color: var(--accent-dark);
+    }
+
+    .ribbon-dropdown.open .ribbon-key {
+      background: var(--accent-soft);
+      border-color: #5eead4;
     }
 
     .ribbon-dropdown-chevron {
@@ -324,31 +345,42 @@
 
     #map {
       position: fixed;
-      top: var(--ribbon-height, 46px);
+      top: var(--ribbon-height, 56px);
       left: 0;
       right: 0;
       bottom: 0;
       background: #eef2f1;
+      transition: right 0.22s ease;
+    }
+
+    body.summary-open #map {
+      right: 50%;
     }
 
     .detail-panel,
     .summary-drawer {
       position: fixed;
-      top: var(--ribbon-height, 46px);
+      top: var(--ribbon-height, 56px);
       right: 0;
-      width: min(420px, 100vw);
-      height: calc(100% - var(--ribbon-height, 46px));
+      width: min(420px, 50vw);
+      height: calc(100% - var(--ribbon-height, 56px));
       background: var(--surface);
       box-shadow: -4px 0 24px rgba(28, 25, 23, 0.16);
       z-index: 1500;
       display: flex;
       flex-direction: column;
       transform: translateX(100%);
-      transition: transform 0.2s ease;
+      transition: transform 0.22s ease, right 0.22s ease, width 0.22s ease;
+    }
+
+    /* Detail hex panel stays a narrower overlay within the left map half when summary is open */
+    body.summary-open .detail-panel {
+      right: 50%;
     }
 
     .summary-drawer {
-      width: min(480px, 100vw);
+      width: 50%;
+      min-width: 320px;
       z-index: 1600;
     }
 
@@ -384,6 +416,60 @@
       cursor: pointer;
       color: var(--text-soft);
       padding: 0 4px;
+    }
+
+    .summary-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-hover);
+    }
+
+    .summary-header-title {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+    }
+
+    .summary-header-title h2 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .summary-header-title .meta {
+      font-size: 0.72rem;
+      color: var(--text-soft);
+      margin-top: 2px;
+    }
+
+    .summary-nav-btn {
+      flex-shrink: 0;
+      padding: 6px 11px;
+      font-size: 0.95rem;
+    }
+
+    .summary-website-link {
+      display: inline-block;
+      margin-bottom: 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--accent-dark);
+      text-decoration: none;
+      border: 1px solid #99f6e4;
+      background: var(--accent-bg);
+      padding: 6px 12px;
+      border-radius: 7px;
+    }
+
+    .summary-website-link:hover {
+      background: var(--accent-soft);
+      border-color: #5eead4;
     }
 
     .detail-body {
@@ -548,9 +634,9 @@
       background: var(--surface);
       border-radius: 16px;
       box-shadow: var(--shadow-lg);
-      width: min(980px, 94vw);
-      height: min(720px, 88vh);
-      max-height: min(720px, 88vh);
+      width: min(600px, 94vw);
+      height: auto;
+      max-height: min(520px, 88vh);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -559,16 +645,16 @@
     .modal-tabs {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 14px 28px 0;
+      gap: 4px;
+      padding: 12px 20px 0;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
 
     .modal-tab {
-      padding: 12px 16px;
+      padding: 9px 12px;
       font-family: inherit;
-      font-size: 1rem;
+      font-size: 0.86rem;
       font-weight: 600;
       color: var(--text-soft);
       background: none;
@@ -600,11 +686,11 @@
     .modal-close:hover { color: var(--text); }
 
     .modal-body {
-      padding: 28px 32px;
+      padding: 20px 24px;
       overflow-y: auto;
       flex: 1;
-      font-size: 1.05rem;
-      line-height: 1.7;
+      font-size: 0.92rem;
+      line-height: 1.6;
       color: var(--text);
     }
 
@@ -612,7 +698,7 @@
     .modal-body a { color: var(--accent-dark); }
 
     .modal-footer {
-      padding: 16px 28px;
+      padding: 12px 20px;
       border-top: 1px solid var(--border);
       display: flex;
       justify-content: flex-end;
@@ -696,11 +782,13 @@
 </head>
 <body>
   <header class="ribbon">
-    <span class="ribbon-title"><span class="ribbon-logo"></span>Regional Monitoring Footprints</span>
+    <button type="button" class="ribbon-title" id="ribbon-title-btn" title="About this map">
+      <span class="ribbon-logo"></span>Regional Monitoring Footprints
+    </button>
 
     <div class="ribbon-controls">
       <div class="ribbon-dropdown" id="programs-dropdown">
-        <button type="button" class="ribbon-dropdown-trigger" id="programs-trigger" aria-haspopup="true" aria-expanded="false">
+        <button type="button" class="ribbon-dropdown-trigger ribbon-key" id="programs-trigger" aria-haspopup="true" aria-expanded="false">
           Programs <span class="ribbon-dropdown-chevron"></span>
         </button>
         <div class="ribbon-dropdown-panel" id="programs-panel">
@@ -765,7 +853,6 @@
       </div>
 
       <span class="ribbon-sep"></span>
-      <button type="button" class="ribbon-btn" id="about-btn">About</button>
       <button type="button" class="ribbon-btn ribbon-btn-accent" id="summary-btn">Summary</button>
     </div>
 
@@ -786,20 +873,17 @@
   </aside>
 
   <aside class="summary-drawer" id="summary-drawer" aria-hidden="true">
-    <div class="detail-header">
-      <div>
+    <div class="summary-header">
+      <button type="button" class="ribbon-btn summary-nav-btn" id="summary-prev" aria-label="Previous program">‹</button>
+      <div class="summary-header-title">
         <h2 id="summary-title">Program summary</h2>
         <div class="meta" id="summary-meta"></div>
       </div>
+      <button type="button" class="ribbon-btn summary-nav-btn" id="summary-next" aria-label="Next program">›</button>
       <button type="button" class="detail-close" id="summary-close" aria-label="Close">&times;</button>
     </div>
     <div class="detail-body" id="summary-body">
       <div id="stats-section"></div>
-      <div class="summary-nav">
-        <button type="button" class="ribbon-btn" id="summary-prev">‹ Prev</button>
-        <span id="summary-position" style="font-size:.75rem;color:var(--text-soft);"></span>
-        <button type="button" class="ribbon-btn" id="summary-next">Next ›</button>
-      </div>
       <div id="summary-program-detail"></div>
     </div>
   </aside>
@@ -927,6 +1011,8 @@
     // Summary drawer state
     let summaryProgramIds = [];
     let summaryIndex = 0;
+    let summaryRestorePrograms = null;
+    let summaryFocusMode = false;
 
     const DEFAULT_PROGRAMS = ["delta", "sf_bay", "smc"];
     const hexCanvasRenderer = L.canvas({ padding: 0.5 });
@@ -2125,33 +2211,28 @@
       const programs = selectedPrograms();
 
       if (!manifest) {
-        container.innerHTML = '<p style="color:var(--text-soft);font-size:.8rem;">Waiting for map data…</p>';
+        container.innerHTML = '<p style="color:var(--text-soft);font-size:.78rem;margin-bottom:12px;">Waiting for map data…</p>';
         return;
       }
       if (!programs.length) {
-        container.innerHTML = '<p style="color:var(--text-soft);font-size:.8rem;">Select at least one program to see stats.</p>';
+        container.innerHTML = '<p style="color:var(--text-soft);font-size:.78rem;margin-bottom:12px;">Select at least one program to see stats.</p>';
         return;
       }
 
       const filterActive = isBoardFilterActive();
       const filterLabel = filterActive ? ` · filtered by ${selectedBoardNames.size}/${allBoardNames.length} boards` : "";
 
+      const line = programs.map((id) => {
+        const meta = manifest.programs[id];
+        return meta.coverage_type === "area"
+          ? `${Number(meta.polygon_count).toLocaleString()} wetlands`
+          : `${Number(meta.station_count).toLocaleString()} stations`;
+      }).join(" + ");
+
       container.innerHTML = `
-        <div class="stats-heading">Currently on the map${filterLabel}</div>
-        <ul style="list-style:none;padding:0;margin:0 0 8px;font-size:0.75rem;line-height:1.55;color:var(--text-soft);">
-          ${programs.map((id) => {
-            const meta = manifest.programs[id];
-            const profile = profiles?.programs?.[id];
-            const count = meta.coverage_type === "area"
-              ? `${Number(meta.polygon_count).toLocaleString()} wetlands`
-              : `${Number(meta.station_count).toLocaleString()} stations`;
-            const fresh = profile?.freshness || {};
-            let freshLabel = "";
-            if (fresh.date_min || fresh.date_max) freshLabel = ` · ${fresh.date_min || "?"}–${fresh.date_max || "?"}`;
-            else if (fresh.year_min || fresh.year_max) freshLabel = ` · ${fresh.year_min || "?"}–${fresh.year_max || "?"}`;
-            return `<li><strong style="color:var(--text);">${escapeHtml(meta.label || id)}</strong> — ${escapeHtml(count)}${escapeHtml(freshLabel)}</li>`;
-          }).join("")}
-        </ul>
+        <p style="font-size:0.75rem;color:var(--text-soft);margin-bottom:12px;">
+          On the map now: ${escapeHtml(line)} from manifest${escapeHtml(filterLabel)}
+        </p>
       `;
     }
 
@@ -2244,13 +2325,39 @@
       modal.setAttribute("aria-hidden", "true");
     }
 
+    function setSoloProgram(programId) {
+      document.querySelectorAll('input[name="program"]').forEach((box) => {
+        if (box.disabled) return;
+        box.checked = box.value === programId;
+      });
+      syncSelectAll();
+      updateProgramsTriggerLabel();
+    }
+
+    function focusSummaryProgram(programId) {
+      if (!programId) return;
+      summaryFocusMode = true;
+      setSoloProgram(programId);
+      shouldFitBounds = false;
+      renderMap();
+
+      const bounds = unionBounds([programId]);
+      if (bounds && bounds.isValid()) {
+        if (typeof map.flyToBounds === "function") {
+          map.flyToBounds(bounds, { padding: [40, 40], maxZoom: 10 });
+        } else {
+          map.fitBounds(bounds, { padding: [40, 40], maxZoom: 10 });
+        }
+      }
+
+      renderSummaryProgram();
+    }
+
     function renderSummaryProgram() {
       const body = document.getElementById("summary-program-detail");
-      const posEl = document.getElementById("summary-position");
 
       if (!summaryProgramIds.length) {
         body.innerHTML = "<p style='color:var(--text-soft);font-size:.85rem;'>Program profile data is unavailable right now.</p>";
-        posEl.textContent = "";
         document.getElementById("summary-title").textContent = "Program summary";
         document.getElementById("summary-meta").textContent = "";
         return;
@@ -2258,42 +2365,49 @@
 
       const id = summaryProgramIds[summaryIndex];
       const p = profiles.programs[id];
-      posEl.textContent = `${summaryIndex + 1} / ${summaryProgramIds.length}`;
       document.getElementById("summary-title").textContent = p.label;
       document.getElementById("summary-meta").textContent =
         `${p.short_label || ""}${p.coverage_type === "area" ? " · Area coverage" : " · Station-based"}`;
 
-      const links = (p.data_links || [])
-        .map((l) => `<a href="${l.url}" target="_blank" rel="noopener">${escapeHtml(l.label)}</a>`)
-        .join(" · ");
-      const fresh = p.freshness || {};
-      let freshText = "—";
-      if (fresh.date_min || fresh.date_max) freshText = `${fresh.date_min || "?"} – ${fresh.date_max || "?"}`;
-      else if (fresh.year_min || fresh.year_max) freshText = `${fresh.year_min || "?"} – ${fresh.year_max || "?"}`;
+      const websiteUrl = p.website || (p.data_links || []).find((l) => l.url)?.url;
+      const websiteBlock = websiteUrl
+        ? `<a class="summary-website-link" href="${websiteUrl}" target="_blank" rel="noopener">Visit program website ↗</a>`
+        : "";
+
+      const narrative = p.narrative || p.summary || "";
 
       let wetlandBlock = "";
       if (p.wetland_meaning) {
         wetlandBlock = `<p style="font-size:0.8rem;line-height:1.5;margin-bottom:14px;padding:10px 12px;background:var(--surface-hover);border-radius:8px;"><strong>What the hex counts mean</strong><br>${escapeHtml(p.wetland_meaning)}</p>`;
       }
 
+      const acquisitionLine = p.acquisition
+        ? `<p style="font-size:0.78rem;color:var(--text-soft);margin-bottom:10px;"><strong style="color:var(--text);">On this map:</strong> ${escapeHtml(p.acquisition)}</p>`
+        : "";
+
+      const themesSentence = (p.data_themes || []).length
+        ? `<p style="font-size:0.78rem;color:var(--text-soft);margin-bottom:14px;"><strong style="color:var(--text);">Data themes:</strong> ${(p.data_themes || []).map(escapeHtml).join(", ")}.</p>`
+        : "";
+
       const api = p.api || {};
+      let apiBlock = "";
+      if (api.available && api.url) {
+        apiBlock = `<div style="border-top:1px solid var(--border);padding-top:12px;">
+          <p style="margin-bottom:6px;font-size:0.78rem;"><strong style="color:var(--text);">Example API query</strong></p>
+          <div class="code-block">${escapeHtml(api.url)}</div>
+          <button type="button" class="ribbon-btn" id="summary-copy-api" style="margin-top:8px;">Copy API URL</button>
+        </div>`;
+      } else if (api.note) {
+        apiBlock = `<p style="font-size:0.78rem;color:var(--text-soft);border-top:1px solid var(--border);padding-top:12px;"><strong style="color:var(--text);">API</strong><br>${escapeHtml(api.note)}</p>`;
+      }
 
       body.innerHTML = `
-        <h3 style="font-size:1.05rem;font-weight:650;letter-spacing:-0.01em;margin-bottom:8px;">${escapeHtml(p.label)}</h3>
-        <p style="font-size:0.84rem;line-height:1.55;margin-bottom:14px;">${escapeHtml(p.summary)}</p>
+        ${websiteBlock}
+        <p style="font-size:0.86rem;line-height:1.6;margin-bottom:14px;">${escapeHtml(narrative)}</p>
         ${wetlandBlock}
-        <div style="font-size:0.78rem;line-height:1.55;color:var(--text-soft);border-top:1px solid var(--border);padding-top:12px;">
-          <p style="margin-bottom:8px;"><strong style="color:var(--text);">Additional info</strong><br>${escapeHtml(p.why_on_map)}</p>
-          <p style="margin-bottom:8px;"><strong style="color:var(--text);">Data themes</strong><br>${(p.data_themes || []).map(escapeHtml).join(" · ") || "—"}</p>
-          <p style="margin-bottom:8px;"><strong style="color:var(--text);">Where it came from</strong><br>${escapeHtml(p.acquisition || "—")}</p>
-          <p style="margin-bottom:8px;"><strong style="color:var(--text);">Freshness</strong><br>${escapeHtml(freshText)}${fresh.note ? ` — ${escapeHtml(fresh.note)}` : ""}</p>
-          <p style="margin-bottom:8px;"><strong style="color:var(--text);">Links</strong><br>${links || "—"}</p>
-          ${api.available && api.url
-            ? `<p style="margin-bottom:6px;"><strong style="color:var(--text);">Example API query</strong></p>
-               <div class="code-block">${escapeHtml(api.url)}</div>
-               <button type="button" class="ribbon-btn" id="summary-copy-api" style="margin-top:8px;">Copy API URL</button>`
-            : `<p><strong style="color:var(--text);">API</strong><br>${escapeHtml(api.note || "No direct API — use the links above.")}</p>`}
-        </div>
+        ${acquisitionLine}
+        ${themesSentence}
+        ${apiBlock}
       `;
 
       const copyBtn = document.getElementById("summary-copy-api");
@@ -2315,33 +2429,66 @@
       } else if (summaryIndex >= summaryProgramIds.length) {
         summaryIndex = 0;
       }
-      renderStatsSection();
-      renderSummaryProgram();
+
       const drawer = document.getElementById("summary-drawer");
+      const alreadyOpen = drawer.classList.contains("open");
+      if (!alreadyOpen) {
+        summaryRestorePrograms = selectedPrograms();
+      }
+
+      document.body.classList.add("summary-open");
       drawer.classList.add("open");
       drawer.setAttribute("aria-hidden", "false");
+
+      const currentId = summaryProgramIds[summaryIndex];
+      if (currentId) focusSummaryProgram(currentId);
+      else renderSummaryProgram();
+
+      renderStatsSection();
+
+      setTimeout(() => map.invalidateSize(), 220);
     }
 
     function closeSummaryDrawer() {
       const drawer = document.getElementById("summary-drawer");
+      const wasOpen = drawer.classList.contains("open");
       drawer.classList.remove("open");
       drawer.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("summary-open");
+
+      if (wasOpen && summaryFocusMode) {
+        summaryFocusMode = false;
+        if (summaryRestorePrograms) {
+          const restoreSet = new Set(summaryRestorePrograms);
+          document.querySelectorAll('input[name="program"]').forEach((box) => {
+            if (box.disabled) return;
+            box.checked = restoreSet.has(box.value);
+          });
+          syncSelectAll();
+          updateProgramsTriggerLabel();
+        }
+        summaryRestorePrograms = null;
+        shouldFitBounds = true;
+        renderMap();
+      }
+
+      setTimeout(() => map.invalidateSize(), 220);
     }
 
     document.getElementById("summary-prev").addEventListener("click", () => {
       if (!summaryProgramIds.length) return;
       summaryIndex = (summaryIndex - 1 + summaryProgramIds.length) % summaryProgramIds.length;
-      renderSummaryProgram();
+      focusSummaryProgram(summaryProgramIds[summaryIndex]);
     });
     document.getElementById("summary-next").addEventListener("click", () => {
       if (!summaryProgramIds.length) return;
       summaryIndex = (summaryIndex + 1) % summaryProgramIds.length;
-      renderSummaryProgram();
+      focusSummaryProgram(summaryProgramIds[summaryIndex]);
     });
     document.getElementById("summary-close").addEventListener("click", closeSummaryDrawer);
     document.getElementById("summary-btn").addEventListener("click", () => openSummaryDrawer());
 
-    document.getElementById("about-btn").addEventListener("click", openWelcomeModal);
+    document.getElementById("ribbon-title-btn").addEventListener("click", openWelcomeModal);
     document.getElementById("welcome-close-x").addEventListener("click", closeWelcomeModal);
     document.getElementById("welcome-got-it").addEventListener("click", closeWelcomeModal);
     document.getElementById("welcome-modal").addEventListener("click", (e) => {
