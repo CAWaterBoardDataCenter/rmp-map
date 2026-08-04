@@ -2655,26 +2655,20 @@
         footprint += ` · ${formatCount(stats.totalHexes)} hexes at ${resLabel}`;
       }
 
-      let filterLine = "All regional boards (no filter)";
-      if (stats.filterActive) {
-        const boardList = [...selectedBoardNames].sort((a, b) => a.localeCompare(b)).join(", ");
-        filterLine = `${selectedBoardNames.size}/${allBoardNames.length} boards selected`;
-        if (boardList) filterLine += ` — ${boardList}`;
-        if (stats.filteredHexes != null) {
-          filterLine += `. On map in filter: ${formatCount(stats.filteredUnits)} ${stats.isArea ? "polygons" : "stations"} in ${formatCount(stats.filteredHexes)} hexes (gray hexes are outside the filter).`;
-        }
-      }
-
       const boards = Array.isArray(p.regional_boards) && p.regional_boards.length
         ? p.regional_boards.join(" · ")
         : "—";
       const tags = programThemeTags(programId);
+      const websiteUrl = p.website || (p.data_links || []).find((l) => l.url)?.url || "";
+      const websiteCell = websiteUrl
+        ? `<a class="summary-url" style="margin:0;display:inline;word-break:break-all;" href="${websiteUrl}" target="_blank" rel="noopener">${escapeHtml(websiteUrl)}</a>`
+        : "—";
 
       return `
         <dl class="summary-meta-block">
+          <div class="summary-meta-row"><dt>Website</dt><dd>${websiteCell}</dd></div>
           <div class="summary-meta-row"><dt>Coverage</dt><dd>${escapeHtml(coverage)}</dd></div>
           <div class="summary-meta-row"><dt>${escapeHtml(unitLabel)}</dt><dd>${escapeHtml(footprint)}</dd></div>
-          <div class="summary-meta-row"><dt>Board filter</dt><dd>${escapeHtml(filterLine)}</dd></div>
           <div class="summary-meta-row"><dt>Regional boards</dt><dd>${escapeHtml(boards)}</dd></div>
           <div class="summary-meta-row"><dt>Data range</dt><dd>${escapeHtml(formatFreshness(p.freshness))}</dd></div>
           <div class="summary-meta-row"><dt>Data themes</dt><dd>${renderThemeTags(tags)}</dd></div>
@@ -2710,9 +2704,6 @@
       }).join("");
 
       return `
-        <p style="margin-bottom:10px;color:var(--text-soft);font-size:0.86rem;">
-          Footprint counts come from the cleaned layers on this map. Theme tags summarize the kinds of monitoring each program covers.
-        </p>
         <div class="overview-table-wrap">
           <table class="overview-table">
             <thead>
@@ -2863,13 +2854,11 @@
       document.getElementById("summary-meta").textContent =
         `${p.short_label || ""}${p.short_label ? " · " : ""}${coverage}`;
 
-      const websiteUrl = p.website || (p.data_links || []).find((l) => l.url)?.url || "";
       const narrative = p.narrative || p.summary || "";
       const wetlandExtra = (p.wetland_meaning || "").trim();
       const paragraph = `${narrative}${wetlandExtra ? ` ${wetlandExtra}` : ""}`.replace(/\s+/g, " ").trim();
 
       body.innerHTML = `
-        ${websiteUrl ? `<a class="summary-url" href="${websiteUrl}" target="_blank" rel="noopener">${escapeHtml(websiteUrl)}</a>` : ""}
         ${renderSummaryMetaBlock(id, p)}
         <p>${escapeHtml(paragraph)}</p>
         ${renderDataAccessBlock(p)}
