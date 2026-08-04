@@ -11,12 +11,9 @@
     "open_data_portal_search": "https://data.ca.gov/dataset/?q=CEDEN",
     "chemistry_open_data": "https://data.ca.gov/dataset/surface-water-chemistry-results",
     "notes": [
-      "Yes. Several of these programs appear in CEDEN under the Program filter (exact names are listed per program below).",
-      "data.ca.gov hosts yearly CEDEN bulk files and APIs by data category (chemistry, toxicity, etc.). Those portals do not filter cleanly by Program the way the CEDEN Query Tool does.",
-      "The example URLs below show how CEDEN web services accept JSON-style filters. They are starting points for developers, not live buttons that download this map’s full chemistry extracts."
-    ],
-    "example_service_base": "https://cedenwebservices.waterboards.ca.gov:9267/cedenwaterqualityresultslist/",
-    "example_query_pattern": "?queryParams={\"filter\":[{\"program\":\"PROGRAM_NAME_HERE\"}],\"top\":1000}"
+      "Several of these programs appear in CEDEN under the Program filter. Exact names are listed in each program Summary.",
+      "data.ca.gov hosts yearly CEDEN bulk files by data category. Those portals do not filter cleanly by Program the way the CEDEN Query Tool does."
+    ]
   },
   "programs": {
     "delta": {
@@ -61,6 +58,17 @@
         "kind": "CEDEN web service example",
         "url": "https://cedenwebservices.waterboards.ca.gov:9267/cedenwaterqualityresultslist/?queryParams={\"filter\":[{\"program\":\"Delta Regional Monitoring Program\"}],\"top\":1000}",
         "open_data": "https://data.ca.gov/dataset/surface-water-chemistry-results"
+      },
+      "data_access": {
+        "steps": [
+          "Open the CEDEN Query Tool: https://ceden.waterboards.ca.gov/CQT/Home/AqtTool",
+          "Choose Process: \"Download Results as TSV\".",
+          "Set Category to \"Water Quality (Chemistry)\".",
+          "Set Program to \"Delta Regional Monitoring Program\".",
+          "Set IncludeQCData to \"NoQCData\".",
+          "Submit the query and download the TSV."
+        ],
+        "note": "Program website: https://deltarmp.org/"
       }
     },
     "sf_bay": {
@@ -105,6 +113,17 @@
         "kind": "CEDEN web service example",
         "url": "https://cedenwebservices.waterboards.ca.gov:9267/cedenwaterqualityresultslist/?queryParams={\"filter\":[{\"program\":\"SF Bay Regional Monitoring for Water Quality\"}],\"top\":1000}",
         "open_data": "https://data.ca.gov/dataset/surface-water-chemistry-results"
+      },
+      "data_access": {
+        "steps": [
+          "Open the CEDEN Query Tool: https://ceden.waterboards.ca.gov/CQT/Home/AqtTool",
+          "Choose Process: \"Download Results as TSV\".",
+          "Set Category to \"Water Quality (Chemistry)\".",
+          "Set Program to \"SF Bay Regional Monitoring for Water Quality\".",
+          "Set IncludeQCData to \"NoQCData\".",
+          "Submit the query and download the TSV."
+        ],
+        "note": "Program website: https://www.sfei.org/programs/rmp"
       }
     },
     "klamath_basin": {
@@ -156,6 +175,15 @@
         "url": null,
         "open_data": "https://data.ca.gov/dataset/?q=CEDEN",
         "note": "Prefer KBMP links and data contacts. CEDEN coverage for this program is incomplete relative to KBMP’s station list."
+      },
+      "data_access": {
+        "steps": [
+          "Open KBMP maps and data: https://kbmp.net/maps-and-data/monitoring-locations",
+          "Or open the EcoAtlas KBMP map: https://kbmp.ecoatlas.org/map.php",
+          "Download the \"Monitoring Location Metadata Spreadsheet\" (Excel).",
+          "That spreadsheet is the primary station list used for this map footprint."
+        ],
+        "note": "CEDEN under \"Klamath Basin Monitoring Program\" has far fewer stations than the KBMP spreadsheet. Prefer the KBMP download for footprint work. Optional CEDEN path: https://ceden.waterboards.ca.gov/CQT/Home/AqtTool"
       }
     },
     "smc": {
@@ -202,6 +230,17 @@
         "kind": "CEDEN web service example",
         "url": "https://cedenwebservices.waterboards.ca.gov:9267/cedenwaterqualityresultslist/?queryParams={\"filter\":[{\"program\":\"Southern CA Stormwater Monitoring Coalition\"}],\"top\":1000}",
         "open_data": "https://data.ca.gov/dataset/surface-water-chemistry-results"
+      },
+      "data_access": {
+        "steps": [
+          "Open the CEDEN Query Tool: https://ceden.waterboards.ca.gov/CQT/Home/AqtTool",
+          "Choose Process: \"Download Results as TSV\".",
+          "Set Category to \"Water Quality (Chemistry)\".",
+          "Set Program to \"Southern CA Stormwater Monitoring Coalition\".",
+          "Set IncludeQCData to \"NoQCData\".",
+          "Submit the query and download the TSV."
+        ],
+        "note": "SMC public data pages are often unreliable. CEDEN is the practical download path used here. Program website: https://socalsmc.org/"
       }
     },
     "bight": {
@@ -250,6 +289,17 @@
         "kind": "CEDEN web service example",
         "url": "https://cedenwebservices.waterboards.ca.gov:9267/cedenwaterqualityresultslist/?queryParams={\"filter\":[{\"program\":\"Southern California Bight Program\"}],\"top\":1000}",
         "open_data": "https://data.ca.gov/dataset/surface-water-chemistry-results"
+      },
+      "data_access": {
+        "steps": [
+          "Open the CEDEN Query Tool: https://ceden.waterboards.ca.gov/CQT/Home/AqtTool",
+          "Choose Process: \"Download Results as TSV\".",
+          "Set Category to \"Water Quality (Chemistry)\".",
+          "Set Program to \"Southern California Bight Program\".",
+          "Set IncludeQCData to \"NoQCData\".",
+          "Submit the query and download the TSV."
+        ],
+        "note": "Survey stations differ by Bight batch year. Program site: https://www.sccwrp.org/"
       }
     },
     "russian_river": {
@@ -295,6 +345,15 @@
         "url": null,
         "open_data": null,
         "note": "Use the SFEI RRARI download. CEDEN MS4 chemistry is sparse for footprint purposes."
+      },
+      "data_access": {
+        "steps": [
+          "Open the RRARI GIS download page: https://www.sfei.org/data/russian-river-aquatic-resource-inventory-rrari-version-10-gis-data",
+          "Download RRARI v1.0 Wetland Polygons (geopackage).",
+          "Use layer RRARI_Polygons for wetland footprint coverage.",
+          "For R3MP program context: https://www.russianriverconfluence.org/r3mp"
+        ],
+        "note": "CEDEN \"Russian River MS4 Program\" has very few unique stations and is not the primary footprint source for this map."
       }
     }
   }

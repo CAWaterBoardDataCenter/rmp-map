@@ -634,9 +634,9 @@
       background: var(--surface);
       border-radius: 16px;
       box-shadow: var(--shadow-lg);
-      width: min(600px, 94vw);
+      width: min(520px, 92vw);
       height: auto;
-      max-height: min(520px, 88vh);
+      max-height: min(420px, 82vh);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -686,19 +686,20 @@
     .modal-close:hover { color: var(--text); }
 
     .modal-body {
-      padding: 20px 24px;
+      padding: 16px 22px;
       overflow-y: auto;
-      flex: 1;
+      flex: 0 1 auto;
       font-size: 0.92rem;
-      line-height: 1.6;
+      line-height: 1.55;
       color: var(--text);
     }
 
-    .modal-body p { margin-bottom: 1.1em; }
+    .modal-body p { margin-bottom: 0.85em; }
+    .modal-body p:last-child { margin-bottom: 0; }
     .modal-body a { color: var(--accent-dark); }
 
     .modal-footer {
-      padding: 12px 20px;
+      padding: 10px 20px;
       border-top: 1px solid var(--border);
       display: flex;
       justify-content: flex-end;
@@ -797,13 +798,11 @@
       display: none;
     }
 
-    .summary-nav {
-      display: flex;
+    .welcome-program-nav.summary-nav {
+      margin: 0 0 10px;
+      padding-top: 0;
+      border-top: none;
       justify-content: space-between;
-      align-items: center;
-      margin: 16px 0 10px;
-      padding-top: 12px;
-      border-top: 1px solid var(--border);
     }
 
     @media (max-width: 720px) {
@@ -826,7 +825,7 @@
         </button>
         <div class="ribbon-dropdown-panel" id="programs-panel">
           <label class="dropdown-check">
-            <input type="checkbox" id="select-all" /> All programs
+            <input type="checkbox" id="select-all" /> All Programs
           </label>
           <div class="dropdown-divider"></div>
           <div id="program-list"></div>
@@ -847,12 +846,15 @@
 
       <div class="ribbon-dropdown" id="basemap-dropdown">
         <button type="button" class="ribbon-dropdown-trigger" id="basemap-trigger" aria-haspopup="true" aria-expanded="false">
-          Map · Light grey <span class="ribbon-dropdown-chevron"></span>
+          Map · Light Grey <span class="ribbon-dropdown-chevron"></span>
         </button>
         <div class="ribbon-dropdown-panel">
-          <button type="button" class="dropdown-option" data-basemap="standard">Standard</button>
-          <button type="button" class="dropdown-option active" data-basemap="light">Light grey</button>
+          <button type="button" class="dropdown-option active" data-basemap="light">Light Grey</button>
           <button type="button" class="dropdown-option" data-basemap="terrain">Terrain</button>
+          <div class="dropdown-divider"></div>
+          <label class="dropdown-check">
+            <input type="checkbox" id="map-labels-toggle" checked /> Labels
+          </label>
         </div>
       </div>
 
@@ -862,10 +864,10 @@
         </button>
         <div class="ribbon-dropdown-panel">
           <label class="overlay-check">
-            <input type="checkbox" id="county-overlay" /> CA counties
+            <input type="checkbox" id="county-overlay" /> California Counties
           </label>
           <label class="overlay-check">
-            <input type="checkbox" id="regional-board-overlay" /> Regional water boards
+            <input type="checkbox" id="regional-board-overlay" /> Regional Water Boards
           </label>
         </div>
       </div>
@@ -876,7 +878,7 @@
         </button>
         <div class="ribbon-dropdown-panel" id="filter-panel">
           <label class="dropdown-check">
-            <input type="checkbox" id="filter-select-all" checked /> All regional boards
+            <input type="checkbox" id="filter-select-all" checked /> All Regional Boards
           </label>
           <div class="dropdown-divider"></div>
           <div id="board-list">
@@ -921,7 +923,6 @@
       <div class="modal-tabs">
         <button type="button" class="modal-tab active" data-tab="overview">Overview</button>
         <button type="button" class="modal-tab" data-tab="programs">Programs</button>
-        <button type="button" class="modal-tab" data-tab="find-data">Find data</button>
         <button type="button" class="modal-close" id="welcome-close-x" aria-label="Close">&times;</button>
       </div>
       <div class="modal-body" id="welcome-body"></div>
@@ -986,28 +987,16 @@
     const REGIONAL_BOARDS_URL = new URL("data/ca_regional_boards.geojson", window.location.href).href;
     const PROFILES_URL = new URL("data/program_profiles.json", window.location.href);
 
+    const GITHUB_REPO_URL = "https://github.com/isamuthung/regional_monitering_programs";
+
     const BASEMAPS = {
-      standard: {
-        label: "Standard",
-        layer: L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          maxZoom: 19,
-        }),
-      },
       light: {
-        label: "Light grey",
-        layer: L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-          subdomains: "abcd",
-          maxZoom: 20,
-        }),
+        label: "Light Grey",
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
       },
       terrain: {
         label: "Terrain",
-        layer: L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
-          attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, SRTM | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
-          maxZoom: 17,
-        }),
+        attribution: "Tiles &copy; Esri - Source: Esri, USGS, NOAA",
       },
     };
 
@@ -1022,7 +1011,9 @@
     let renderToken = 0;
     let lastRenderedResolution = null;
     let activeBasemap = "light";
+    let showMapLabels = true;
     let baseTileLayer = null;
+    let labelTileLayer = null;
     let countyLayerGroup = null;
     let countyLabelMarkers = [];
     let countiesGeoJSON = null;
@@ -1061,13 +1052,52 @@
 
     function setBasemap(basemapId) {
       if (!BASEMAPS[basemapId]) return;
-      if (baseTileLayer) map.removeLayer(baseTileLayer);
-      baseTileLayer = BASEMAPS[basemapId].layer;
-      baseTileLayer.addTo(map);
       activeBasemap = basemapId;
+      refreshBasemapLayers();
     }
 
-    setBasemap("light");
+    function refreshBasemapLayers() {
+      if (baseTileLayer) map.removeLayer(baseTileLayer);
+      if (labelTileLayer) {
+        map.removeLayer(labelTileLayer);
+        labelTileLayer = null;
+      }
+
+      if (activeBasemap === "light") {
+        const url = showMapLabels
+          ? "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          : "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png";
+        baseTileLayer = L.tileLayer(url, {
+          attribution: BASEMAPS.light.attribution,
+          subdomains: "abcd",
+          maxZoom: 20,
+        });
+      } else {
+        // Light grey terrain / hillshade base (Esri World Terrain Base)
+        baseTileLayer = L.tileLayer(
+          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}",
+          {
+            attribution: BASEMAPS.terrain.attribution,
+            maxZoom: 16,
+          }
+        );
+        if (showMapLabels) {
+          labelTileLayer = L.tileLayer(
+            "https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Reference_Overlay/MapServer/tile/{z}/{y}/{x}",
+            {
+              attribution: "",
+              maxZoom: 16,
+              opacity: 0.9,
+            }
+          );
+        }
+      }
+
+      baseTileLayer.addTo(map);
+      if (labelTileLayer) labelTileLayer.addTo(map);
+    }
+
+    refreshBasemapLayers();
 
     function updateOverlayLabelVisibility() {
       const showCounties = map.getZoom() >= 8;
@@ -1406,14 +1436,9 @@
     }
 
     function updateProgramsTriggerLabel() {
-      const boxes = [...document.querySelectorAll('input[name="program"]:not(:disabled)')];
-      const checked = boxes.filter((b) => b.checked);
-      let label;
-      if (!boxes.length) label = "None";
-      else if (checked.length === boxes.length) label = `All (${boxes.length})`;
-      else if (checked.length === 0) label = "None";
-      else label = `${checked.length}/${boxes.length}`;
-      setDropdownTriggerText("programs-trigger", "Programs", label);
+      const trigger = document.getElementById("programs-trigger");
+      if (!trigger) return;
+      trigger.innerHTML = `Programs <span class="ribbon-dropdown-chevron"></span>`;
     }
 
     function updateHexTriggerLabel() {
@@ -2174,6 +2199,11 @@
       });
     });
 
+    document.getElementById("map-labels-toggle").addEventListener("change", (e) => {
+      showMapLabels = e.target.checked;
+      refreshBasemapLayers();
+    });
+
     document.getElementById("county-overlay").addEventListener("change", async (e) => {
       try {
         await toggleCountyOverlay(e.target.checked);
@@ -2259,13 +2289,14 @@
     function renderWelcomeOverview() {
       const intro = profiles?.map_intro;
       if (!intro) {
-        return "<p>Program profile data is unavailable right now, but the map below still works — pick programs from the Programs menu to explore station footprints.</p>";
+        return "<p>Program profile data is unavailable right now, but the map below still works. Pick programs from the Programs menu to explore station footprints.</p>";
       }
       const p1 = `${intro.summary} ${intro.comparable_why}`.replace(/\s+/g, " ").trim();
       const p2 = (intro.honesty_note || "").replace(/\s+/g, " ").trim();
       return `
         <p>${escapeHtml(p1)}</p>
         <p>${escapeHtml(p2)}</p>
+        <p style="margin-top:12px;">Source code: <a href="${GITHUB_REPO_URL}" target="_blank" rel="noopener">${escapeHtml(GITHUB_REPO_URL)}</a></p>
       `;
     }
 
@@ -2276,42 +2307,20 @@
       const id = ids[Math.min(summaryIndex, ids.length - 1)];
       const p = profiles.programs[id];
       return `
-        <div class="welcome-program-nav summary-nav" style="margin-bottom:12px;">
+        <div class="welcome-program-nav summary-nav" style="margin-bottom:10px;">
           <button type="button" class="ribbon-btn" id="welcome-prev">‹ Prev</button>
-          <span style="font-size:.72rem;color:var(--text-soft);">${summaryIndex + 1} / ${ids.length}</span>
           <button type="button" class="ribbon-btn" id="welcome-next">Next ›</button>
         </div>
-        <h3 style="font-size:1rem;margin-bottom:6px;">${escapeHtml(p.label)}</h3>
+        <h3 style="font-size:1rem;margin-bottom:6px;">${escapeHtml(p.short_label || p.label)}</h3>
         <p>${escapeHtml(p.summary)}</p>
-        <p style="margin-top:10px;">
-          <button type="button" class="ribbon-btn ribbon-btn-accent" id="welcome-open-summary" data-program="${p.id}">Open full summary</button>
-        </p>
-      `;
-    }
-
-    function renderWelcomeFindData() {
-      const fd = profiles?.find_data;
-      if (!fd) return "<p>Program profile data is unavailable right now.</p>";
-      const notes = (fd.notes || []).map((n) => `<li>${escapeHtml(n)}</li>`).join("");
-      return `
-        <h3 style="font-size:0.95rem;margin-bottom:6px;">Finding the underlying data</h3>
-        <p>Several programs appear in the CEDEN Query Tool under the <strong>Program</strong> filter. Use each program’s Summary page for the exact name.</p>
-        <p style="margin-top:10px;">
-          <a href="${fd.ceden_query_tool}" target="_blank" rel="noopener">CEDEN Query Tool</a> ·
-          <a href="${fd.ceden_find_data}" target="_blank" rel="noopener">CEDEN find-data guide</a> ·
-          <a href="${fd.open_data_portal_search}" target="_blank" rel="noopener">data.ca.gov CEDEN search</a>
-        </p>
-        <p style="font-weight:600;margin-top:14px;margin-bottom:4px;font-size:0.8rem;">Example query pattern</p>
-        <div class="code-block">${escapeHtml(fd.example_service_base + fd.example_query_pattern)}</div>
-        <ul style="margin:12px 0 0 18px;font-size:0.75rem;color:var(--text-soft);line-height:1.55;">${notes}</ul>
       `;
     }
 
     function setWelcomeTab(tab) {
+      if (tab === "find-data") tab = "overview";
       document.querySelectorAll(".modal-tab").forEach((t) => t.classList.toggle("active", t.dataset.tab === tab));
       const body = document.getElementById("welcome-body");
-      if (tab === "overview") body.innerHTML = renderWelcomeOverview();
-      else if (tab === "programs") {
+      if (tab === "programs") {
         summaryProgramIds = summaryProgramOrder();
         if (summaryIndex >= summaryProgramIds.length) summaryIndex = 0;
         body.innerHTML = renderWelcomePrograms();
@@ -2325,11 +2334,9 @@
           summaryIndex = (summaryIndex + 1) % summaryProgramIds.length;
           setWelcomeTab("programs");
         });
-        document.getElementById("welcome-open-summary")?.addEventListener("click", (e) => {
-          closeWelcomeModal();
-          openSummaryDrawer(e.currentTarget.dataset.program);
-        });
-      } else body.innerHTML = renderWelcomeFindData();
+      } else {
+        body.innerHTML = renderWelcomeOverview();
+      }
     }
 
     function openWelcomeModal() {
@@ -2373,6 +2380,29 @@
       renderSummaryProgram();
     }
 
+    function renderDataAccessBlock(p) {
+      const access = p.data_access;
+      if (!access || !Array.isArray(access.steps) || !access.steps.length) return "";
+      const steps = access.steps.map((step) => {
+        // Auto-link bare URLs in step text
+        const linked = escapeHtml(step).replace(
+          /(https?:\/\/[^\s<]+)/g,
+          '<a href="$1" target="_blank" rel="noopener">$1</a>'
+        );
+        return `<li style="margin-bottom:6px;">${linked}</li>`;
+      }).join("");
+      const note = access.note
+        ? `<p style="margin-top:10px;font-size:0.88rem;color:var(--text-soft);">${escapeHtml(access.note)}</p>`
+        : "";
+      return `
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);">
+          <h3 style="font-size:0.95rem;font-weight:650;margin-bottom:8px;">How to get the data</h3>
+          <ol style="margin:0 0 0 1.2rem;padding:0;font-size:0.9rem;line-height:1.55;">${steps}</ol>
+          ${note}
+        </div>
+      `;
+    }
+
     function renderSummaryProgram() {
       const body = document.getElementById("summary-program-detail");
 
@@ -2396,6 +2426,7 @@
       body.innerHTML = `
         ${websiteUrl ? `<a class="summary-url" href="${websiteUrl}" target="_blank" rel="noopener">${escapeHtml(websiteUrl)}</a>` : ""}
         <p>${escapeHtml(paragraph)}</p>
+        ${renderDataAccessBlock(p)}
       `;
     }
 
