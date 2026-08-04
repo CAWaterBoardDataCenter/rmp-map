@@ -1,8 +1,23 @@
 # Regional Monitoring Programs Station Footprint Map
 
-This is an interactive map of six California regional water monitoring programs (RMPs). Station locations (and wetland area coverage) are aggregated into **H3 hex grids** at three resolutions (≈5 km, 3 km, 1 km). The map shows where programs monitor and not results or sample counts over time. However, there is clear traceability from where the data was sourced and the method used to synthesize the data. 
+Interactive map of six California regional water monitoring programs (RMPs). Station locations (and, for Russian River, wetland inventory polygons) are aggregated into **H3 hex grids** at about 5 km, 3 km, and 1 km. The map shows **where** programs observe the landscape — not lab results over time.
 
-The Live Map is available here: https://isamuthung.github.io/regional_monitering_programs/
+Live map: https://isamuthung.github.io/regional_monitering_programs/
+
+Local preview:
+
+```powershell
+python -m http.server 3000
+# open http://localhost:3000
+```
+
+---
+
+## What the map is for
+
+Programs differ in design and data systems, but each layer answers the same spatial question: where does this program observe? Hex grids put those footprints on a common grid so overlaps and gaps are easier to see.
+
+Most CEDEN-based layers come from **Water Quality (Chemistry)** downloads used to locate stations. Separate CEDEN categories (toxicity, tissue, benthic, habitat) were not pulled into this build. Klamath Basin uses KBMP’s station metadata spreadsheet. Russian River uses RRARI wetland inventory polygons, not sample stations.
 
 ---
 
@@ -17,132 +32,124 @@ The Live Map is available here: https://isamuthung.github.io/regional_monitering
 | Southern California Bight | Survey stations across Bight batches |
 | Russian River | Wetland area coverage (RRARI polygons), not point stations |
 
+### Russian River wetland hexes
+
+Each Russian River hex counts how many **RRARI wetland inventory polygons** intersect that cell. Those are delineated habitat features from the source GIS — not “N wetlands that are each monitored with water samples” inside the hex. Monitoring results, if any, must be sought from R3MP / SFEI sources or CEDEN separately.
+
+Program blurbs, themes, freshness, and find-data links for the UI live in [`data/program_profiles.json`](data/program_profiles.json).
+
 ---
 
-## Sources
+## Map UI (local / Pages)
 
-To find where the raw files come from, here’s the exact links and instructions for accessing the orignial downloads that have been used in this map for each program. 
+- **About** — welcome pane (overview, program browser, find-data help)
+- **Summary** — half-screen drawer; solo-focuses one RMP on the map and flies to its bounds
+- **Programs / Hex / Map / Overlays / Filter** — layer and view controls
+- **Filter** — regional water board filter; non-matching hexes are grayed on the map
+- Defaults: light-grey basemap, 5 km hexes, three lighter programs (Delta, SF Bay, SMC)
 
-### **Delta Regional Monitoring Program**
+---
 
-Here’s the main website: https://deltarmp.org/
+## Finding data (CEDEN / data.ca.gov)
 
-1. https://ceden.waterboards.ca.gov/CQT/Home/AqtTool
-2. Process: “Download Results as TSV”
-    
-    Category: “Water Quality (Chemistry)”
-    
-    **Program “Delta Regional Monitoring Program”**
-    
-    IncludeQCData: “NoQCData”
-    
-    Submit
-    
+Yes — several programs appear in the CEDEN Query Tool under the **Program** filter (exact names are in `program_profiles.json`).
 
-### **San Francisco Bay**
+### CEDEN Query Tool (best for program-specific pulls)
 
-Here’s the base website: https://www.sfei.org/programs/rmp
+1. Open https://ceden.waterboards.ca.gov/CQT/Home/AqtTool  
+2. Process: Download Results as TSV  
+3. Category: Water Quality (Chemistry)  
+4. Program: use the exact CEDEN program name for that RMP  
+5. IncludeQCData: NoQCData → Submit  
 
-1. https://ceden.waterboards.ca.gov/CQT/Home/AqtTool
-2. Process: “Download Results as TSV”
-    
-    Category: “Water Quality (Chemistry)”
-    
-    **Program “SF Bay Regional Monitoring for Water Quality”**
-    
-    IncludeQCData: “NoQCData”
-    
-    Submit
-    
+### data.ca.gov
 
-### **Klamath Basin**
+https://data.ca.gov/dataset/?q=CEDEN hosts yearly bulk files and portal APIs by **data category** (chemistry, toxicity, etc.). Those dumps do **not** filter cleanly by Program the way the CEDEN Query Tool does. Prefer CEDEN for program-scoped downloads; use Open Data for category-wide bulk access.
 
-Here is the base website: https://kbmp.net/ This program keeps a clean list of their stations separate from CEDEN like the others above, so it’s intutive to get their spatial footprint even though it’s not in an offical data portal. 
+### Example web-service query URLs
 
-1. https://kbmp.net/maps-and-data/monitoring-locations
-2. https://kbmp.ecoatlas.org/map.php - “Monitoring Location Metadata Spreadsheet” is the excel worksheet that’s directly in data/raw. One data gap is that there’s a disparity between the 2440 stations present on their website and what’s available in CEDEN under “Klamath Basin Monitoring Program” which displays only 173 stations.
-    
-    From their website, I’m able to download a xlsx (Microsoft Excel Workbook) therefore, the script ingests this as the raw data and then translates it into the cleaned csv directly. There’s no need for the user to convert to tsv if they run this again.
-    
+`program_profiles.json` includes example CEDEN web-service URLs shaped like:
 
-### **Stormwater Monitoring Coalition (SMC)**
+```text
+https://cedenwebservices.waterboards.ca.gov:9267/cedenwaterqualityresultslist/?queryParams={"filter":[{"program":"PROGRAM_NAME_HERE"}],"top":1000}
+```
 
-Here’s their base website: https://socalsmc.org/. Antoher data gap, if you try finding data directly on their website, you will hit deadends. The links under https://socalsmc.org/data/ do not work. These also don’t work: https://smc.sccwrp.org/#dr and https://nexus.sccwrp.org/smcdataquery/ Instead, use CEDEN to access the data. 
+These are **starting points for developers**, not a guarantee that every environment returns a full extract. See **Testing the example API URLs** below.
 
-1. https://ceden.waterboards.ca.gov/CQT/Home/AqtTool
-2. Process: “Download Results as TSV”
-    
-    Category: “Water Quality (Chemistry)”
-    
-    **Program “Southern CA Stormwater Monitoring Coalition”**
-    
-    IncludeQCData: “NoQCData”
-    
-    Submit
-    
+---
 
-### **Southern California Bight**
+## Sources (how this map’s raw files were obtained)
 
-Here is their base website: https://www.sccwrp.org/.  Although they do have their own data portal, it was difficult to parse where to gather station footprint data: https://dataportal.sccwrp.org/ Therefore we use CEDEN. 
+### Delta Regional Monitoring Program
 
-1. https://ceden.waterboards.ca.gov/CQT/Home/AqtTool
-2. Process: “Download Results as TSV”
-    
-    Category: “Water Quality (Chemistry)”
-    
-    **Program “Southern California Bight Program”**
-    
-    IncludeQCData: “NoQCData”
-    
-    Submit
-    
+Website: https://deltarmp.org/
 
-One thing to note, this dataset has batches of 5 years with various numbers of station locations. The script is designed to handle this, and adds an additional column indicating which batch year the unique station is from.
+1. https://ceden.waterboards.ca.gov/CQT/Home/AqtTool  
+2. Download Results as TSV → Category: Water Quality (Chemistry) → Program: **Delta Regional Monitoring Program** → NoQCData → Submit  
 
-### **Russian River**
+### San Francisco Bay
 
-This program has multiple webites to which to find information, such as this: https://www.russianriverconfluence.org/r3mp and this:  [](https://www.russianriverconfluence.org/r3mp)https://sites.google.com/sfei.org/r3mp/ While they do have data published in CEDEN, it’s not substantive for our purposes and likely outdated, so this is the only program where I created the hexagons out of the raw river system geopackage file they had on their website. 
+Website: https://www.sfei.org/programs/rmp
 
-This is another link to find more on them: https://www.sfei.org/projects/russian-river-regional-monitoring-program-comprehensive-basemap-surface-waters-and#toc-associated-data
+1. CEDEN Query Tool → Chemistry → Program: **SF Bay Regional Monitoring for Water Quality** → NoQCData  
 
-This is the link where I downloaded the datafile (RRARI v1.0 Wetland Polygons (561 MB) geopackage) directly from them: https://www.sfei.org/data/russian-river-aquatic-resource-inventory-rrari-version-10-gis-data Since this raw data differs from the others, the clean script is made specificly for this gpkg (geopackage) data. Thus, the hexagons on the map for this program is derived from polygons of the wetland habitat, not specific station data, but it should help get a sense of its rough footprint nonetheless. The steps below are the ways to get data from CEDEN, but it is likely incomplete for the reasons stated here. 
+### Klamath Basin
 
-1. https://ceden.waterboards.ca.gov/CQT/Home/AqtTool
-2. Process: “Download Results as TSV”
-    
-    Category: “Water Quality (Chemistry)”
-    
-    **Program “Russian River MS4 Program”**
-    
-    IncludeQCData: “NoQCData”
-    
-    Submit
-    
+Website: https://kbmp.net/
 
-One thing to note, there were only 8 unique stations through CEDEN. And the links through the official website do not yield directly to their data although they do state they want to improve data visualization and access.
+Primary footprint: KBMP Monitoring Location Metadata spreadsheet  
+https://kbmp.net/maps-and-data/monitoring-locations · https://kbmp.ecoatlas.org/map.php  
+
+Note: CEDEN under “Klamath Basin Monitoring Program” has far fewer stations than KBMP’s spreadsheet.
+
+### Stormwater Monitoring Coalition (SMC)
+
+Website: https://socalsmc.org/
+
+CEDEN Query Tool → Chemistry → Program: **Southern CA Stormwater Monitoring Coalition** → NoQCData  
+
+(SMC public data links are often unreliable; CEDEN was the practical path used here.)
+
+### Southern California Bight
+
+Website: https://www.sccwrp.org/
+
+CEDEN Query Tool → Chemistry → Program: **Southern California Bight Program** → NoQCData  
+
+Stations carry a survey `batch_year` in cleaned data.
+
+### Russian River
+
+R3MP overview: https://www.russianriverconfluence.org/r3mp  
+
+Primary footprint: RRARI v1.0 Wetland Polygons (geopackage)  
+https://www.sfei.org/data/russian-river-aquatic-resource-inventory-rrari-version-10-gis-data  
+
+CEDEN “Russian River MS4 Program” has very few unique stations and is not used for the primary hex footprint.
 
 ---
 
 ## Repo layout
 
 ```
-├── index.html                 # Map UI 
-├── .nojekyll                  
+├── index.html                 # Map UI
+├── .nojekyll
 ├── data/
-│   ├── geojson/               # Built hex layers and manifest.json 
+│   ├── program_profiles.json  # UI summaries, themes, find-data links
+│   ├── geojson/               # Built hex layers + manifest.json
 │   ├── cleaned/               # Unified station CSVs
-│   ├── ca_counties.geojson    # Optional overlay
+│   ├── ca_counties.geojson
 │   ├── ca_regional_boards.geojson
-│   └── raw/                   # Local only
-├── scripts/                   # clean .py per program
-└── map/                       # build_h3_geojson.py amd helpers
+│   └── raw/                   # Local only (gitignored)
+├── scripts/                   # clean_*.py per program
+└── map/                       # build_h3_geojson.py and helpers
 ```
 
-The browser only reads `index.html` and files under `data/` (geojson + overlays). Raw downloads stay on the machine, however you are able to find access to those raw files through the steps below.
+The browser only reads `index.html` and files under `data/` (geojson, overlays, profiles). Raw downloads stay local.
 
 ---
 
-## For Developers
+## For developers
 
 ```powershell
 python -m venv venv
@@ -160,8 +167,7 @@ python scripts/clean_bight.py
 # Build hex layers → data/geojson/
 python map/build_h3_geojson.py
 
-# Open <http://localhost:8000>
-python -m http.server 8000
+python -m http.server 3000
 ```
 
 ### Cleaned station CSV schema
@@ -180,15 +186,38 @@ Russian River uses a GeoPackage of wetland polygons instead of a station CSV (`s
 
 ---
 
+## Testing the example API URLs
+
+What they are: example GET requests against CEDEN’s web services (`cedenwaterqualityresultslist` and related endpoints), with a JSON-style `queryParams` filter that includes a **program** name. They are documented as developer examples in About → Find data and in `program_profiles.json`.
+
+What they are **not**: a live guaranteed download of this map’s full chemistry extracts, and not the same as data.ca.gov’s yearly Open Data APIs.
+
+### How to test
+
+1. Copy an example URL from `data/program_profiles.json` → `programs.<id>.api.url` (Delta / SF Bay / SMC / Bight have examples).  
+2. Paste into a browser address bar, or:
+
+```powershell
+Invoke-WebRequest -Uri 'PASTE_URL_HERE' -Headers @{ Accept = 'text/csv' } -OutFile ceden_sample.csv
+```
+
+3. Expect either CSV/text results, an auth/network error, or an empty/partial response depending on CEDEN service availability, network path, and query size (`top` caps the row count).  
+4. For reliable program-scoped downloads for rebuilding this map, use the **CEDEN Query Tool** steps above instead of depending on the web-service URL alone.  
+5. For category-wide bulk files, use https://data.ca.gov/dataset/surface-water-chemistry-results (and related CEDEN datasets) — those portal APIs do not replace Program filtering.
+
+Klamath and Russian River do not have a dependable program-scoped chemistry web-service URL in this project; use KBMP / RRARI downloads.
+
+---
+
 ## GitHub Pages
 
-This site is served from the `main` branch root. These are the steps to re-upload this to Github Pages
+Served from the `main` branch root.
 
-1. Push updates to `main`
-2. Repo **Settings → Pages → Deploy from branch → `main` / `/ (root)`**
-3. Wait a minute, then open the live URL above and the map should render correctly.
+1. Push updates to `main`  
+2. Repo **Settings → Pages → Deploy from branch → `main` / `/ (root)`**  
+3. Open the live URL above  
 
-If you decide to rebuild the GeoJSON file locally, then do this to update the map.
+After rebuilding GeoJSON locally:
 
 ```powershell
 git add data/geojson
