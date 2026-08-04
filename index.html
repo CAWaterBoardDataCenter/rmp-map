@@ -1624,7 +1624,7 @@
         }
         const wetlandNote =
           (profiles?.programs?.[props.program_id]?.wetland_meaning || "").trim() ||
-          "Each hex counts RRARI wetland inventory polygons that intersect that cell — delineated habitat from the source GIS, not monitored water-quality stations.";
+          "Each hex counts RRARI wetland inventory polygons that intersect that cell. Those are delineated habitat features from the source GIS, not monitored water-quality stations.";
         html += `</tbody></table>
           <p style="margin-top:10px;font-size:0.85rem;color:var(--text-soft);line-height:1.5;">
             ${escapeHtml(wetlandNote)}
