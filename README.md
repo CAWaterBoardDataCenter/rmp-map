@@ -47,7 +47,8 @@ Local (`http://localhost:3000`) and live Pages serve the same `main` branch file
 - **About** — welcome pane (overview + program blurbs)
 - **Summary** — half-screen drawer; instantly solos one RMP on the map, then smooth-zooms; closing restores the previous multi-program view
 - **Programs / Hex / Map / Overlays / Filter** — layer and view controls
-- **Hex hover / click** — count tag only (stations, wetland polygons, or overlap features); no side detail pane
+- **Hex hover** — larger count tag (stations, wetland polygons, or overlap features)
+- **Hex click** — opens that hex’s own records (station table for monitoring programs; wetland polygon summary only for Russian River / area coverage)
 - **Filter** — regional water board filter; non-matching hexes are grayed on the map
 - Defaults: light-grey basemap, 5 km hexes, three lighter programs (Delta, SF Bay, SMC)
 

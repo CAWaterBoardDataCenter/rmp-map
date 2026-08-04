@@ -357,23 +357,59 @@
       right: 50%;
     }
 
+    .detail-panel,
     .summary-drawer {
       position: fixed;
       top: var(--ribbon-height, 56px);
       right: 0;
-      width: 50%;
-      min-width: 320px;
       height: calc(100% - var(--ribbon-height, 56px));
       background: var(--surface);
       box-shadow: -4px 0 24px rgba(28, 25, 23, 0.16);
-      z-index: 1600;
       display: flex;
       flex-direction: column;
       transform: translateX(100%);
       transition: transform 0.22s ease, right 0.22s ease, width 0.22s ease;
     }
 
+    .detail-panel {
+      width: min(420px, 50vw);
+      z-index: 1500;
+    }
+
+    .summary-drawer {
+      width: 50%;
+      min-width: 320px;
+      z-index: 1600;
+    }
+
+    /* Keep hex detail inside the left map half when Summary is open */
+    body.summary-open .detail-panel {
+      right: 50%;
+    }
+
+    .detail-panel.open,
     .summary-drawer.open { transform: translateX(0); }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-hover);
+    }
+
+    .detail-header h2 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .detail-header .meta {
+      font-size: 0.78rem;
+      color: var(--text-soft);
+      margin-top: 4px;
+    }
 
     .detail-close {
       background: none;
@@ -384,6 +420,29 @@
       color: var(--text-soft);
       padding: 0 4px;
     }
+
+    .station-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+
+    .station-table th {
+      text-align: left;
+      padding: 6px 8px;
+      background: var(--surface-hover);
+      border-bottom: 2px solid var(--border);
+      position: sticky;
+      top: 0;
+    }
+
+    .station-table td {
+      padding: 6px 8px;
+      border-bottom: 1px solid #f1f5f4;
+      vertical-align: top;
+    }
+
+    .station-table tr:hover td { background: var(--surface-hover); }
 
     .hex-count-tooltip {
       font-family: inherit;
@@ -866,6 +925,17 @@
   </header>
 
   <div id="map"></div>
+
+  <aside class="detail-panel" id="detail-panel" aria-hidden="true">
+    <div class="detail-header">
+      <div>
+        <h2 id="detail-title">Hex detail</h2>
+        <div class="meta" id="detail-meta"></div>
+      </div>
+      <button type="button" class="detail-close" id="detail-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </aside>
 
   <aside class="summary-drawer" id="summary-drawer" aria-hidden="true">
     <div class="summary-header">
@@ -1601,6 +1671,144 @@
       `;
     }
 
+    function isAreaCoverage(props) {
+      return props?.coverage_type === "area" || props?.program_id === "russian_river";
+    }
+
+    function renderStationTable(stations, { showProgram = false } = {}) {
+      if (!stations.length) {
+        return `<p style="color:var(--text-soft);">No station records are embedded in this hex.</p>`;
+      }
+
+      const metaKeys = new Set();
+      if (showProgram) metaKeys.add("program");
+      stations.forEach((s) => {
+        Object.keys(s).forEach((k) => {
+          if (!["station_id", "station_name", "lat", "lon", "program", "program_id"].includes(k)) {
+            metaKeys.add(k);
+          }
+        });
+      });
+      const extraCols = [...metaKeys];
+
+      let html = `<table class="station-table"><thead><tr>
+        <th>Name</th><th>ID</th><th>Lat</th><th>Lon</th>
+        ${extraCols.map((c) => `<th>${escapeHtml(c.replace(/_/g, " "))}</th>`).join("")}
+      </tr></thead><tbody>`;
+
+      stations.forEach((s) => {
+        const programLabel = s.program || ensureProgramStyle(s.program_id, "").label || "—";
+        html += `<tr>
+          <td>${escapeHtml(s.station_name || "—")}</td>
+          <td>${escapeHtml(String(s.station_id ?? "—"))}</td>
+          <td>${s.lat ?? "—"}</td>
+          <td>${s.lon ?? "—"}</td>
+          ${extraCols.map((c) => {
+            if (c === "program") return `<td>${escapeHtml(programLabel)}</td>`;
+            return `<td>${escapeHtml(s[c] == null || s[c] === "" ? "—" : String(s[c]))}</td>`;
+          }).join("")}
+        </tr>`;
+      });
+
+      html += "</tbody></table>";
+      return html;
+    }
+
+    function renderAreaDetailHtml(props) {
+      let html = `<table class="station-table"><tbody>
+        <tr><th>Wetland polygons in hex</th><td>${props.polygon_count ?? props.station_count ?? "—"}</td></tr>`;
+      if (props.level1_summary) {
+        html += `<tr><th>Level 1 types</th><td>${escapeHtml(props.level1_summary)}</td></tr>`;
+      }
+      if (props.wetland_summary) {
+        html += `<tr><th>Wetland types</th><td>${escapeHtml(props.wetland_summary)}</td></tr>`;
+      }
+      html += "</tbody></table>";
+
+      // RRARI note only for Russian River / area coverage — never for station programs.
+      if (isAreaCoverage(props)) {
+        const wetlandNote =
+          (profiles?.programs?.[props.program_id]?.wetland_meaning || "").trim() ||
+          (props.program_id === "russian_river"
+            ? "Each hex counts RRARI wetland inventory polygons that intersect that cell. Those are delineated habitat features from the source GIS, not monitored water-quality stations."
+            : "");
+        if (wetlandNote) {
+          html += `<p style="margin-top:10px;font-size:0.85rem;color:var(--text-soft);line-height:1.5;">
+            ${escapeHtml(wetlandNote)}
+          </p>`;
+        }
+      }
+      return html;
+    }
+
+    function openDetailPanel(feature) {
+      const props = feature.properties || {};
+      const resLabel = RES_LABELS[props.resolution] || `r${props.resolution}`;
+      const stations = Array.isArray(props.stations) ? props.stations : [];
+      const titleEl = document.getElementById("detail-title");
+      const metaEl = document.getElementById("detail-meta");
+      const bodyEl = document.getElementById("detail-body");
+
+      // Always replace body first so a prior Russian River view cannot linger on a Klamath click.
+      bodyEl.innerHTML = "";
+
+      if (props.overlap) {
+        titleEl.textContent = `Overlap — ${props.station_count} feature(s)`;
+        metaEl.textContent = `${props.program_labels || ""} · ${resLabel} hex · H3 ${props.h3_index || ""}`;
+
+        const areaSummaries = props.area_summaries || [];
+        let html = "";
+        if (areaSummaries.length) {
+          html += `<table class="station-table"><thead><tr>
+            <th>Program</th><th>Wetland polygons</th><th>Types</th>
+          </tr></thead><tbody>`;
+          areaSummaries.forEach((a) => {
+            html += `<tr>
+              <td>${escapeHtml(a.program)}</td>
+              <td>${a.polygon_count ?? "—"}</td>
+              <td>${escapeHtml(a.wetland_summary || a.level1_summary || "—")}</td>
+            </tr>`;
+          });
+          html += "</tbody></table>";
+        }
+        if (stations.length) {
+          if (html) html += `<hr style="margin:12px 0;border:none;border-top:1px solid var(--border)" />`;
+          html += `<h3 style="font-size:0.9rem;margin:0 0 8px;">Stations in this hex</h3>`;
+          html += renderStationTable(stations, { showProgram: true });
+        }
+        if (!html) {
+          html = `<p style="color:var(--text-soft);">No station or wetland records are embedded in this overlap hex.</p>`;
+        }
+        bodyEl.innerHTML = html;
+      } else if (isAreaCoverage(props) && !stations.length) {
+        const style = ensureProgramStyle(props.program_id, props.program);
+        titleEl.textContent = `${style.label} — wetland area`;
+        metaEl.textContent =
+          `${props.polygon_count ?? props.station_count ?? 0} wetland polygon(s) · ${resLabel} · H3 ${props.h3_index || ""}`;
+        bodyEl.innerHTML = renderAreaDetailHtml(props);
+      } else {
+        const style = ensureProgramStyle(props.program_id, props.program);
+        titleEl.textContent = `${style.label} — ${props.station_count ?? stations.length} station(s)`;
+        metaEl.textContent = `${resLabel} hex · H3 ${props.h3_index || ""}`;
+        bodyEl.innerHTML = renderStationTable(stations, {
+          showProgram: stations.some((s) => s.program || s.program_id),
+        });
+      }
+
+      const panel = document.getElementById("detail-panel");
+      panel.classList.add("open");
+      panel.setAttribute("aria-hidden", "false");
+    }
+
+    function closeDetailPanel() {
+      const panel = document.getElementById("detail-panel");
+      if (!panel) return;
+      panel.classList.remove("open");
+      panel.setAttribute("aria-hidden", "true");
+      const bodyEl = document.getElementById("detail-body");
+      if (bodyEl) bodyEl.innerHTML = "";
+    }
+
     function bindHexCountTooltip(layer, feature) {
       layer.bindTooltip(hexCountTooltipHtml(feature), {
         className: "hex-count-tooltip",
@@ -1610,18 +1818,15 @@
       });
       layer.on("click", (e) => {
         L.DomEvent.stopPropagation(e);
-        // Count tag only — never open a side pane or disturb Summary focus.
-        if (pinnedHexLayer && pinnedHexLayer !== layer) {
-          pinnedHexLayer.closeTooltip();
-        }
-        layer.openTooltip(e.latlng);
-        pinnedHexLayer = layer;
+        clearPinnedHexTooltip();
+        // Show this hex's own records only — never close/alter Summary focus.
+        openDetailPanel(feature);
       });
     }
 
     function escapeHtml(text) {
       const div = document.createElement("div");
-      div.textContent = text;
+      div.textContent = text == null ? "" : String(text);
       return div.innerHTML;
     }
 
@@ -1976,6 +2181,7 @@
         activeLayers.forEach((layer) => map.removeLayer(layer));
         activeLayers.clear();
         clearPinnedHexTooltip();
+        closeDetailPanel();
         layersNeedRebuild = false;
         statusEl.textContent = "Select at least one program.";
         renderStatsSection();
@@ -2056,6 +2262,7 @@
 
         // Atomic swap — keep prior hexes visible until replacements are ready.
         clearPinnedHexTooltip();
+        closeDetailPanel();
         activeLayers.forEach((layer) => map.removeLayer(layer));
         activeLayers.clear();
         nextLayers.forEach((layer, id) => {
@@ -2195,7 +2402,11 @@
       if (res !== lastRenderedResolution) renderMap();
     });
 
-    map.on("click", clearPinnedHexTooltip);
+    map.on("click", () => {
+      clearPinnedHexTooltip();
+      closeDetailPanel();
+    });
+    document.getElementById("detail-close").addEventListener("click", closeDetailPanel);
 
     // ---- Summary browser drawer ----
 
@@ -2391,6 +2602,7 @@
     }
 
     function openSummaryDrawer(programId) {
+      closeDetailPanel();
       summaryProgramIds = summaryProgramOrder();
       const drawer = document.getElementById("summary-drawer");
       const alreadyOpen = drawer.classList.contains("open");
@@ -2491,6 +2703,11 @@
       const welcome = document.getElementById("welcome-modal");
       if (welcome.classList.contains("open")) {
         closeWelcomeModal();
+        return;
+      }
+      const detail = document.getElementById("detail-panel");
+      if (detail?.classList.contains("open")) {
+        closeDetailPanel();
         return;
       }
       const summary = document.getElementById("summary-drawer");
