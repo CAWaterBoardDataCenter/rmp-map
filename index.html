@@ -357,56 +357,23 @@
       right: 50%;
     }
 
-    .detail-panel,
     .summary-drawer {
       position: fixed;
       top: var(--ribbon-height, 56px);
       right: 0;
-      width: min(420px, 50vw);
+      width: 50%;
+      min-width: 320px;
       height: calc(100% - var(--ribbon-height, 56px));
       background: var(--surface);
       box-shadow: -4px 0 24px rgba(28, 25, 23, 0.16);
-      z-index: 1500;
+      z-index: 1600;
       display: flex;
       flex-direction: column;
       transform: translateX(100%);
       transition: transform 0.22s ease, right 0.22s ease, width 0.22s ease;
     }
 
-    /* Detail hex panel stays a narrower overlay within the left map half when summary is open */
-    body.summary-open .detail-panel {
-      right: 50%;
-    }
-
-    .summary-drawer {
-      width: 50%;
-      min-width: 320px;
-      z-index: 1600;
-    }
-
-    .detail-panel.open,
     .summary-drawer.open { transform: translateX(0); }
-
-    .detail-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface-hover);
-    }
-
-    .detail-header h2 {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .detail-header .meta {
-      font-size: 0.78rem;
-      color: var(--text-soft);
-      margin-top: 4px;
-    }
 
     .detail-close {
       background: none;
@@ -416,6 +383,37 @@
       cursor: pointer;
       color: var(--text-soft);
       padding: 0 4px;
+    }
+
+    .hex-count-tooltip {
+      font-family: inherit;
+      font-size: 0.95rem;
+      line-height: 1.35;
+      padding: 8px 12px;
+      border: 1px solid rgba(28, 25, 23, 0.12);
+      border-radius: 8px;
+      box-shadow: 0 6px 18px rgba(28, 25, 23, 0.16);
+      background: #fff;
+      color: var(--text);
+      max-width: 280px;
+      white-space: normal;
+    }
+
+    .hex-count-tooltip .hex-tip-title {
+      font-weight: 650;
+      margin-bottom: 2px;
+    }
+
+    .hex-count-tooltip .hex-tip-count {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .hex-count-tooltip .hex-tip-note {
+      margin-top: 4px;
+      font-size: 0.8rem;
+      color: var(--text-soft);
     }
 
     .summary-header {
@@ -477,29 +475,6 @@
       overflow-y: auto;
       padding: 14px 16px;
     }
-
-    .station-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.78rem;
-    }
-
-    .station-table th {
-      text-align: left;
-      padding: 6px 8px;
-      background: var(--surface-hover);
-      border-bottom: 2px solid var(--border);
-      position: sticky;
-      top: 0;
-    }
-
-    .station-table td {
-      padding: 6px 8px;
-      border-bottom: 1px solid #f1f5f4;
-      vertical-align: top;
-    }
-
-    .station-table tr:hover td { background: var(--surface-hover); }
 
     .legend-panel {
       line-height: 1.45;
@@ -892,17 +867,6 @@
 
   <div id="map"></div>
 
-  <aside class="detail-panel" id="detail-panel" aria-hidden="true">
-    <div class="detail-header">
-      <div>
-        <h2 id="detail-title">Hex detail</h2>
-        <div class="meta" id="detail-meta"></div>
-      </div>
-      <button type="button" class="detail-close" id="detail-close" aria-label="Close">&times;</button>
-    </div>
-    <div class="detail-body" id="detail-body"></div>
-  </aside>
-
   <aside class="summary-drawer" id="summary-drawer" aria-hidden="true">
     <div class="summary-header">
       <button type="button" class="ribbon-btn summary-nav-btn" id="summary-prev" aria-label="Previous program">‹</button>
@@ -1032,6 +996,8 @@
     let summaryIndex = 0;
     let summaryRestorePrograms = null;
     let summaryFocusMode = false;
+    let summaryFocusToken = 0;
+    let layersNeedRebuild = false;
 
     const DEFAULT_PROGRAMS = ["delta", "sf_bay", "smc"];
     const hexCanvasRenderer = L.canvas({ padding: 0.5 });
@@ -1527,6 +1493,13 @@
         `;
         applyProgramControlStyle(label, programId);
         label.querySelector('input[name="program"]').addEventListener("change", () => {
+          // Summary focus owns which program is on the map until the drawer closes.
+          if (summaryFocusMode) {
+            setSoloProgram(summaryProgramIds[summaryIndex]);
+            syncSelectAll();
+            updateProgramsTriggerLabel();
+            return;
+          }
           syncSelectAll();
           updateProgramsTriggerLabel();
           shouldFitBounds = true;
@@ -1590,120 +1563,60 @@
       return geojson;
     }
 
-    function openDetailPanel(feature) {
-      closeSummaryDrawer();
-      const props = feature.properties;
-      const resLabel = RES_LABELS[props.resolution] || `r${props.resolution}`;
-      const stations = props.stations || [];
+    let pinnedHexLayer = null;
 
-      if (props.overlap) {
-        document.getElementById("detail-title").textContent =
-          `Overlap — ${props.station_count} feature(s)`;
-        document.getElementById("detail-meta").textContent =
-          `${props.program_labels} · ${resLabel} hex · H3 ${props.h3_index}`;
-
-        const areaSummaries = props.area_summaries || [];
-        if (!stations.length && areaSummaries.length) {
-          let html = `<table class="station-table"><thead><tr>
-            <th>Program</th><th>Wetland polygons</th><th>Types</th>
-          </tr></thead><tbody>`;
-          areaSummaries.forEach((a) => {
-            html += `<tr>
-              <td>${escapeHtml(a.program)}</td>
-              <td>${a.polygon_count}</td>
-              <td>${escapeHtml(a.wetland_summary || a.level1_summary || "—")}</td>
-            </tr>`;
-          });
-          html += "</tbody></table>";
-          if (stations.length) {
-            html += "<hr style='margin:12px 0;border:none;border-top:1px solid var(--border)' />";
-          } else {
-            document.getElementById("detail-body").innerHTML = html;
-            document.getElementById("detail-panel").classList.add("open");
-            document.getElementById("detail-panel").setAttribute("aria-hidden", "false");
-            return;
-          }
-        }
-      } else if (props.coverage_type === "area") {
-        const style = ensureProgramStyle(props.program_id, props.program);
-        document.getElementById("detail-title").textContent =
-          `${style.label} — wetland area`;
-        document.getElementById("detail-meta").textContent =
-          `${props.polygon_count} wetland polygon(s) in this hex · ${resLabel} · H3 ${props.h3_index}`;
-      } else {
-        const style = ensureProgramStyle(props.program_id, props.program);
-        document.getElementById("detail-title").textContent =
-          `${style.label} — ${props.station_count} station(s)`;
-        document.getElementById("detail-meta").textContent =
-          `${resLabel} hex · H3 ${props.h3_index}`;
-      }
-
-      if (props.coverage_type === "area" && !props.overlap) {
-        let html = `<table class="station-table"><tbody>
-          <tr><th>Wetland polygons in hex</th><td>${props.polygon_count}</td></tr>`;
-        if (props.level1_summary) {
-          html += `<tr><th>Level 1 types</th><td>${escapeHtml(props.level1_summary)}</td></tr>`;
-        }
-        if (props.wetland_summary) {
-          html += `<tr><th>Wetland types</th><td>${escapeHtml(props.wetland_summary)}</td></tr>`;
-        }
-        const wetlandNote =
-          (profiles?.programs?.[props.program_id]?.wetland_meaning || "").trim() ||
-          "Each hex counts RRARI wetland inventory polygons that intersect that cell. Those are delineated habitat features from the source GIS, not monitored water-quality stations.";
-        html += `</tbody></table>
-          <p style="margin-top:10px;font-size:0.85rem;color:var(--text-soft);line-height:1.5;">
-            ${escapeHtml(wetlandNote)}
-          </p>`;
-        document.getElementById("detail-body").innerHTML = html;
-        document.getElementById("detail-panel").classList.add("open");
-        document.getElementById("detail-panel").setAttribute("aria-hidden", "false");
-        return;
-      }
-
-      const metaKeys = new Set();
-      const showProgram = props.overlap || stations.some((s) => s.program || s.program_id);
-      if (showProgram) metaKeys.add("program");
-
-      stations.forEach((s) => {
-        Object.keys(s).forEach((k) => {
-          if (!["station_id", "station_name", "lat", "lon", "program", "program_id"].includes(k)) {
-            metaKeys.add(k);
-          }
-        });
-      });
-      const extraCols = [...metaKeys];
-
-      let html = `<table class="station-table"><thead><tr>
-        <th>Name</th><th>ID</th><th>Lat</th><th>Lon</th>
-        ${extraCols.map((c) => `<th>${c.replace(/_/g, " ")}</th>`).join("")}
-      </tr></thead><tbody>`;
-
-      stations.forEach((s) => {
-        const programLabel = s.program || ensureProgramStyle(s.program_id, "").label || "—";
-        html += `<tr>
-          <td>${escapeHtml(s.station_name || "—")}</td>
-          <td>${escapeHtml(s.station_id)}</td>
-          <td>${s.lat}</td>
-          <td>${s.lon}</td>
-          ${extraCols.map((c) => {
-            if (c === "program") return `<td>${escapeHtml(programLabel)}</td>`;
-            return `<td>${escapeHtml(s[c] || "—")}</td>`;
-          }).join("")}
-        </tr>`;
-      });
-
-      html += "</tbody></table>";
-      document.getElementById("detail-body").innerHTML = html;
-
-      const panel = document.getElementById("detail-panel");
-      panel.classList.add("open");
-      panel.setAttribute("aria-hidden", "false");
+    function clearPinnedHexTooltip() {
+      if (!pinnedHexLayer) return;
+      pinnedHexLayer.closeTooltip();
+      pinnedHexLayer = null;
     }
 
-    function closeDetailPanel() {
-      const panel = document.getElementById("detail-panel");
-      panel.classList.remove("open");
-      panel.setAttribute("aria-hidden", "true");
+    function hexCountTooltipHtml(feature) {
+      const props = feature.properties;
+      const matchNote = featureMatchesBoardFilter(feature)
+        ? ""
+        : '<div class="hex-tip-note">Outside board filter</div>';
+
+      if (props.overlap) {
+        return `
+          <div class="hex-tip-title">${escapeHtml(props.program_labels || "Overlap")}</div>
+          <div class="hex-tip-count">${props.station_count} feature(s)</div>
+          ${matchNote}
+        `;
+      }
+
+      const title = escapeHtml(props.program || "Program");
+      if (props.coverage_type === "area") {
+        return `
+          <div class="hex-tip-title">${title}</div>
+          <div class="hex-tip-count">${props.polygon_count ?? props.station_count} wetland polygon(s)</div>
+          ${matchNote}
+        `;
+      }
+
+      return `
+        <div class="hex-tip-title">${title}</div>
+        <div class="hex-tip-count">${props.station_count} station(s)</div>
+        ${matchNote}
+      `;
+    }
+
+    function bindHexCountTooltip(layer, feature) {
+      layer.bindTooltip(hexCountTooltipHtml(feature), {
+        className: "hex-count-tooltip",
+        direction: "top",
+        sticky: true,
+        opacity: 0.97,
+      });
+      layer.on("click", (e) => {
+        L.DomEvent.stopPropagation(e);
+        // Count tag only — never open a side pane or disturb Summary focus.
+        if (pinnedHexLayer && pinnedHexLayer !== layer) {
+          pinnedHexLayer.closeTooltip();
+        }
+        layer.openTooltip(e.latlng);
+        pinnedHexLayer = layer;
+      });
     }
 
     function escapeHtml(text) {
@@ -1890,20 +1803,7 @@
             };
           },
           onEachFeature: (feature, layer) => {
-            layer.on("click", (e) => {
-              L.DomEvent.stopPropagation(e);
-              openDetailPanel(feature);
-            });
-            const { station_count, program, coverage_type, polygon_count } = feature.properties;
-            const tooltipCount = coverage_type === "area"
-              ? `${polygon_count ?? station_count} wetland polygon(s)`
-              : `${station_count} station(s)`;
-            const matchNote = featureMatchesBoardFilter(feature) ? "" : " (outside board filter)";
-            layer.bindTooltip(`${program}: ${tooltipCount}${matchNote}`, {
-              sticky: false,
-              direction: "top",
-              opacity: 0.92,
-            });
+            bindHexCountTooltip(layer, feature);
           },
         }
       );
@@ -1935,16 +1835,7 @@
             };
           },
           onEachFeature: (feature, layer) => {
-            layer.on("click", (e) => {
-              L.DomEvent.stopPropagation(e);
-              openDetailPanel(feature);
-            });
-            const { station_count, program_labels } = feature.properties;
-            layer.bindTooltip(`${program_labels}: ${station_count}`, {
-              sticky: false,
-              direction: "top",
-              opacity: 0.92,
-            });
+            bindHexCountTooltip(layer, feature);
           },
         }
       );
@@ -2039,6 +1930,42 @@
       return L.latLngBounds([south, west], [north, east]);
     }
 
+    function pruneLayersToPrograms(programIds) {
+      const keep = new Set(programIds);
+      clearPinnedHexTooltip();
+      for (const [id, layer] of [...activeLayers.entries()]) {
+        if (keep.has(id)) continue;
+        map.removeLayer(layer);
+        activeLayers.delete(id);
+        // Overlap hexes live on a separate layer — remaining program layers may be incomplete.
+        layersNeedRebuild = true;
+      }
+    }
+
+    function layersMatchSelection(programs, resolution) {
+      if (layersNeedRebuild) return false;
+      if (lastRenderedResolution !== resolution) return false;
+      const currentIds = [...activeLayers.keys()]
+        .filter((k) => k !== "__overlap__")
+        .sort()
+        .join(",");
+      const wantedIds = [...programs].sort().join(",");
+      if (currentIds !== wantedIds) return false;
+      const hasOverlap = activeLayers.has("__overlap__");
+      return programs.length > 1 ? hasOverlap : !hasOverlap;
+    }
+
+    function flyToPrograms(programIds, padding = [32, 32]) {
+      const bounds = unionBounds(programIds);
+      if (!bounds || !bounds.isValid()) return;
+      map.invalidateSize();
+      if (typeof map.flyToBounds === "function") {
+        map.flyToBounds(bounds, { padding, maxZoom: 10 });
+      } else {
+        map.fitBounds(bounds, { padding, maxZoom: 10 });
+      }
+    }
+
     async function renderMap() {
       const token = ++renderToken;
       const programs = selectedPrograms();
@@ -2048,17 +1975,28 @@
       if (!programs.length) {
         activeLayers.forEach((layer) => map.removeLayer(layer));
         activeLayers.clear();
+        clearPinnedHexTooltip();
+        layersNeedRebuild = false;
         statusEl.textContent = "Select at least one program.";
-        closeDetailPanel();
+        renderStatsSection();
+        return;
+      }
+
+      // Already showing the right set — skip blanking rebuild.
+      if (layersMatchSelection(programs, resolution)) {
+        if (shouldFitBounds) {
+          const bounds = unionBounds(programs);
+          if (bounds && bounds.isValid()) {
+            map.invalidateSize();
+            map.fitBounds(bounds, { padding: [32, 32], maxZoom: 10 });
+          }
+          shouldFitBounds = false;
+        }
         renderStatsSection();
         return;
       }
 
       statusEl.textContent = `Loading ${RES_LABELS[resolution]} hexes…`;
-
-      activeLayers.forEach((layer) => map.removeLayer(layer));
-      activeLayers.clear();
-      closeDetailPanel();
 
       const layerStats = [];
       let totalHexes = 0;
@@ -2066,18 +2004,18 @@
       let overlapCount = 0;
 
       try {
-        const programLayers = [];
-        for (const programId of programs) {
-          const geojson = await loadGeoJSON(programId, resolution);
-          if (token !== renderToken) return;
-
-          const styleConfig = ensureProgramStyle(
-            programId,
-            manifest.programs[programId].label
-          );
-          const breaks = computeBreaks(geojson.features, styleConfig.palettes.length);
-          programLayers.push({ programId, features: geojson.features, styleConfig, breaks, geojson });
-        }
+        const programLayers = await Promise.all(
+          programs.map(async (programId) => {
+            const geojson = await loadGeoJSON(programId, resolution);
+            const styleConfig = ensureProgramStyle(
+              programId,
+              manifest.programs[programId].label
+            );
+            const breaks = computeBreaks(geojson.features, styleConfig.palettes.length);
+            return { programId, features: geojson.features, styleConfig, breaks, geojson };
+          })
+        );
+        if (token !== renderToken) return;
 
         const overlappingH3 = new Set();
         let overlapFeatures = [];
@@ -2091,12 +2029,10 @@
           overlapCount = overlapFeatures.length;
         }
 
+        const nextLayers = new Map();
         for (const { programId, geojson, styleConfig, breaks } of programLayers) {
           const layer = buildLayer(programId, geojson, breaks, styleConfig, overlappingH3);
-          if (layer) {
-            layer.addTo(map);
-            activeLayers.set(programId, layer);
-          }
+          if (layer) nextLayers.set(programId, layer);
           layerStats.push({ programId, breaks });
 
           totalHexes += overlappingH3.size
@@ -2111,11 +2047,22 @@
         if (overlapFeatures.length) {
           const overlapLayer = buildOverlapLayer(overlapFeatures);
           if (overlapLayer) {
-            overlapLayer.addTo(map);
-            activeLayers.set("__overlap__", overlapLayer);
+            nextLayers.set("__overlap__", overlapLayer);
             totalHexes += overlapFeatures.length;
           }
         }
+
+        if (token !== renderToken) return;
+
+        // Atomic swap — keep prior hexes visible until replacements are ready.
+        clearPinnedHexTooltip();
+        activeLayers.forEach((layer) => map.removeLayer(layer));
+        activeLayers.clear();
+        nextLayers.forEach((layer, id) => {
+          layer.addTo(map);
+          activeLayers.set(id, layer);
+        });
+        layersNeedRebuild = false;
 
         updateLegend(layerStats, overlapCount);
 
@@ -2136,6 +2083,7 @@
         if (shouldFitBounds) {
           const bounds = unionBounds(programs);
           if (bounds && bounds.isValid()) {
+            map.invalidateSize();
             map.fitBounds(bounds, { padding: [32, 32], maxZoom: 10 });
           }
           shouldFitBounds = false;
@@ -2164,6 +2112,12 @@
     }
 
     document.getElementById("select-all").addEventListener("change", (e) => {
+      if (summaryFocusMode) {
+        // Keep Summary's solo program; restore multi-select only when Summary closes.
+        setSoloProgram(summaryProgramIds[summaryIndex]);
+        syncSelectAll();
+        return;
+      }
       const checked = e.target.checked;
       document.querySelectorAll('input[name="program"]:not(:disabled)').forEach((box) => {
         box.checked = checked;
@@ -2241,8 +2195,7 @@
       if (res !== lastRenderedResolution) renderMap();
     });
 
-    map.on("click", closeDetailPanel);
-    document.getElementById("detail-close").addEventListener("click", closeDetailPanel);
+    map.on("click", clearPinnedHexTooltip);
 
     // ---- Summary browser drawer ----
 
@@ -2359,23 +2312,32 @@
       updateProgramsTriggerLabel();
     }
 
-    function focusSummaryProgram(programId) {
+    function focusSummaryProgram(programId, options = {}) {
       if (!programId) return;
+      const deferZoomMs = options.deferZoomMs ?? 0;
+      const focusToken = ++summaryFocusToken;
       summaryFocusMode = true;
       setSoloProgram(programId);
       shouldFitBounds = false;
-      renderMap();
 
-      const bounds = unionBounds([programId]);
-      if (bounds && bounds.isValid()) {
-        if (typeof map.flyToBounds === "function") {
-          map.flyToBounds(bounds, { padding: [40, 40], maxZoom: 10 });
-        } else {
-          map.fitBounds(bounds, { padding: [40, 40], maxZoom: 10 });
-        }
-      }
-
+      // Instantly drop every other program / overlap so selection feels immediate.
+      pruneLayersToPrograms([programId]);
       renderSummaryProgram();
+
+      const zoomAt = performance.now() + deferZoomMs;
+      const runZoom = () => {
+        if (focusToken !== summaryFocusToken || !summaryFocusMode) return;
+        if (summaryProgramIds[summaryIndex] !== programId) return;
+        flyToPrograms([programId], [40, 40]);
+      };
+
+      renderMap().then(() => {
+        if (focusToken !== summaryFocusToken || !summaryFocusMode) return;
+        if (summaryProgramIds[summaryIndex] !== programId) return;
+        const wait = Math.max(0, zoomAt - performance.now());
+        if (wait > 0) setTimeout(runZoom, wait);
+        else runZoom();
+      });
     }
 
     function renderDataAccessBlock(p) {
@@ -2429,16 +2391,22 @@
     }
 
     function openSummaryDrawer(programId) {
-      closeDetailPanel();
       summaryProgramIds = summaryProgramOrder();
+      const drawer = document.getElementById("summary-drawer");
+      const alreadyOpen = drawer.classList.contains("open");
+
       if (programId && summaryProgramIds.includes(programId)) {
         summaryIndex = summaryProgramIds.indexOf(programId);
+      } else if (!alreadyOpen) {
+        // Prefer a program already on the map so solo + prune is instant.
+        const selected = selectedPrograms();
+        const preferred = selected.find((id) => summaryProgramIds.includes(id));
+        if (preferred) summaryIndex = summaryProgramIds.indexOf(preferred);
+        else if (summaryIndex >= summaryProgramIds.length) summaryIndex = 0;
       } else if (summaryIndex >= summaryProgramIds.length) {
         summaryIndex = 0;
       }
 
-      const drawer = document.getElementById("summary-drawer");
-      const alreadyOpen = drawer.classList.contains("open");
       if (!alreadyOpen) {
         summaryRestorePrograms = selectedPrograms();
       }
@@ -2448,10 +2416,13 @@
       drawer.setAttribute("aria-hidden", "false");
 
       const currentId = summaryProgramIds[summaryIndex];
-      if (currentId) focusSummaryProgram(currentId);
-      else renderSummaryProgram();
-
-      setTimeout(() => map.invalidateSize(), 220);
+      if (currentId) {
+        // Wait for drawer width transition before zoom so framing matches the half-map.
+        focusSummaryProgram(currentId, { deferZoomMs: alreadyOpen ? 0 : 220 });
+      } else {
+        renderSummaryProgram();
+        setTimeout(() => map.invalidateSize(), 220);
+      }
     }
 
     function closeSummaryDrawer() {
@@ -2463,6 +2434,10 @@
 
       if (wasOpen && summaryFocusMode) {
         summaryFocusMode = false;
+        summaryFocusToken += 1;
+        const restoreIds = summaryRestorePrograms
+          ? [...summaryRestorePrograms]
+          : selectedPrograms();
         if (summaryRestorePrograms) {
           const restoreSet = new Set(summaryRestorePrograms);
           document.querySelectorAll('input[name="program"]').forEach((box) => {
@@ -2473,11 +2448,19 @@
           updateProgramsTriggerLabel();
         }
         summaryRestorePrograms = null;
-        shouldFitBounds = true;
-        renderMap();
-      }
+        shouldFitBounds = false;
 
-      setTimeout(() => map.invalidateSize(), 220);
+        // Rebuild multi-program view without blanking first; zoom after map expands.
+        const zoomAt = performance.now() + 220;
+        renderMap().then(() => {
+          const wait = Math.max(0, zoomAt - performance.now());
+          const finish = () => flyToPrograms(restoreIds.length ? restoreIds : selectedPrograms());
+          if (wait > 0) setTimeout(finish, wait);
+          else finish();
+        });
+      } else if (wasOpen) {
+        setTimeout(() => map.invalidateSize(), 220);
+      }
     }
 
     document.getElementById("summary-prev").addEventListener("click", () => {
@@ -2515,7 +2498,7 @@
         closeSummaryDrawer();
         return;
       }
-      closeDetailPanel();
+      clearPinnedHexTooltip();
     });
 
     (async function init() {

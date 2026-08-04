@@ -42,9 +42,12 @@ Program blurbs, themes, freshness, and find-data links for the UI live in [`data
 
 ## Map UI (local / Pages)
 
-- **About** — welcome pane (overview, program browser, find-data help)
-- **Summary** — half-screen drawer; solo-focuses one RMP on the map and flies to its bounds
+Local (`http://localhost:3000`) and live Pages serve the same `main` branch files.
+
+- **About** — welcome pane (overview + program blurbs)
+- **Summary** — half-screen drawer; instantly solos one RMP on the map, then smooth-zooms; closing restores the previous multi-program view
 - **Programs / Hex / Map / Overlays / Filter** — layer and view controls
+- **Hex hover / click** — count tag only (stations, wetland polygons, or overlap features); no side detail pane
 - **Filter** — regional water board filter; non-matching hexes are grayed on the map
 - Defaults: light-grey basemap, 5 km hexes, three lighter programs (Delta, SF Bay, SMC)
 
