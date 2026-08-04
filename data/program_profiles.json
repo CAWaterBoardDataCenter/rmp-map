@@ -67,8 +67,7 @@
           "Set Program to \"Delta Regional Monitoring Program\".",
           "Set IncludeQCData to \"NoQCData\".",
           "Submit the query and download the TSV."
-        ],
-        "note": "Program website: https://deltarmp.org/"
+        ]
       }
     },
     "sf_bay": {
@@ -122,8 +121,7 @@
           "Set Program to \"SF Bay Regional Monitoring for Water Quality\".",
           "Set IncludeQCData to \"NoQCData\".",
           "Submit the query and download the TSV."
-        ],
-        "note": "Program website: https://www.sfei.org/programs/rmp"
+        ]
       }
     },
     "klamath_basin": {
@@ -183,7 +181,7 @@
           "Download the \"Monitoring Location Metadata Spreadsheet\" (Excel).",
           "That spreadsheet is the primary station list used for this map footprint."
         ],
-        "note": "CEDEN under \"Klamath Basin Monitoring Program\" has far fewer stations than the KBMP spreadsheet. Prefer the KBMP download for footprint work. Optional CEDEN path: https://ceden.waterboards.ca.gov/CQT/Home/AqtTool"
+        "note": "CEDEN under \"Klamath Basin Monitoring Program\" has far fewer stations than the KBMP spreadsheet. Prefer the KBMP download for footprint work. Optional CEDEN path: https://ceden.waterboards.ca.gov/CQT/Home/AqtTool."
       }
     },
     "smc": {
@@ -240,7 +238,7 @@
           "Set IncludeQCData to \"NoQCData\".",
           "Submit the query and download the TSV."
         ],
-        "note": "SMC public data pages are often unreliable. CEDEN is the practical download path used here. Program website: https://socalsmc.org/"
+        "note": "SMC public data pages are often unreliable. CEDEN is the practical download path used here."
       }
     },
     "bight": {
@@ -299,7 +297,7 @@
           "Set IncludeQCData to \"NoQCData\".",
           "Submit the query and download the TSV."
         ],
-        "note": "Survey stations differ by Bight batch year. Program site: https://www.sccwrp.org/"
+        "note": "Survey stations differ by Bight batch year."
       }
     },
     "russian_river": {
