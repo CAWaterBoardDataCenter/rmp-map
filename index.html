@@ -838,10 +838,9 @@
           Hex · 5 km <span class="ribbon-dropdown-chevron"></span>
         </button>
         <div class="ribbon-dropdown-panel">
-          <button type="button" class="dropdown-option" data-mode="auto">Auto (zoom-linked)</button>
-          <button type="button" class="dropdown-option" data-res="8">1 km</button>
-          <button type="button" class="dropdown-option" data-res="7">3 km</button>
           <button type="button" class="dropdown-option active" data-res="6">5 km</button>
+          <button type="button" class="dropdown-option" data-res="7">3 km</button>
+          <button type="button" class="dropdown-option" data-res="8">1 km</button>
         </div>
       </div>
 
@@ -2178,12 +2177,8 @@
       btn.addEventListener("click", () => {
         document.querySelectorAll("#hex-dropdown .dropdown-option").forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
-        if (btn.dataset.mode === "auto") {
-          resolutionMode = "auto";
-        } else {
-          resolutionMode = "manual";
-          manualResolution = Number(btn.dataset.res);
-        }
+        resolutionMode = "manual";
+        manualResolution = Number(btn.dataset.res);
         updateHexTriggerLabel();
         closeAllDropdowns();
         renderMap();
