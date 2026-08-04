@@ -2309,11 +2309,11 @@
       const p = profiles.programs[id];
       const websiteUrl = p.website || (p.data_links || []).find((l) => l.url)?.url || "";
       return `
-        <div class="welcome-program-nav summary-nav" style="margin-bottom:10px;">
+        <div class="welcome-program-nav" style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
           <button type="button" class="ribbon-btn" id="welcome-prev">‹ Prev</button>
+          <h3 style="flex:1;font-size:1rem;margin:0;line-height:1.3;text-align:center;">${escapeHtml(p.label)}</h3>
           <button type="button" class="ribbon-btn" id="welcome-next">Next ›</button>
         </div>
-        <h3 style="font-size:1rem;margin-bottom:6px;">${escapeHtml(p.short_label || p.label)}</h3>
         ${websiteUrl ? `<p style="margin-bottom:10px;"><a class="summary-url" style="margin-bottom:0;" href="${websiteUrl}" target="_blank" rel="noopener">${escapeHtml(websiteUrl)}</a></p>` : ""}
         <p>${escapeHtml(p.summary)}</p>
       `;
@@ -2418,7 +2418,7 @@
 
       const id = summaryProgramIds[summaryIndex];
       const p = profiles.programs[id];
-      document.getElementById("summary-title").textContent = p.short_label || p.label;
+      document.getElementById("summary-title").textContent = p.label;
       document.getElementById("summary-meta").textContent = "";
 
       const websiteUrl = p.website || (p.data_links || []).find((l) => l.url)?.url || "";
