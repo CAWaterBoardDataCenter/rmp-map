@@ -668,9 +668,9 @@
       background: var(--surface);
       border-radius: 16px;
       box-shadow: var(--shadow-lg);
-      width: min(640px, 94vw);
-      height: min(480px, 84vh);
-      max-height: min(480px, 84vh);
+      width: min(760px, 94vw);
+      height: min(520px, 86vh);
+      max-height: min(520px, 86vh);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -813,7 +813,89 @@
       line-height: 1.45;
       color: var(--accent-dark);
       word-break: break-all;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
+    }
+
+    .summary-meta-block {
+      margin: 0 0 16px;
+      padding: 12px 12px 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-hover);
+    }
+
+    .summary-meta-row {
+      display: grid;
+      grid-template-columns: 7.5rem 1fr;
+      gap: 6px 10px;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      margin-bottom: 6px;
+    }
+
+    .summary-meta-row:last-child { margin-bottom: 0; }
+
+    .summary-meta-row dt {
+      margin: 0;
+      color: var(--text-soft);
+      font-weight: 600;
+    }
+
+    .summary-meta-row dd {
+      margin: 0;
+      color: var(--text);
+    }
+
+    .theme-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .theme-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .overview-table-wrap {
+      overflow: auto;
+      margin-top: 4px;
+    }
+
+    .overview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+
+    .overview-table th,
+    .overview-table td {
+      text-align: left;
+      vertical-align: top;
+      padding: 8px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .overview-table th {
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+      font-weight: 700;
+      color: var(--text-soft);
+      white-space: nowrap;
+    }
+
+    .overview-table td.program-cell {
+      font-weight: 650;
+      min-width: 7.5rem;
     }
 
     #summary-program-detail {
@@ -821,7 +903,7 @@
       line-height: 1.7;
     }
 
-    #summary-program-detail p {
+    #summary-program-detail > p {
       margin-bottom: 0;
     }
 
@@ -830,7 +912,9 @@
     }
 
     .summary-header-title .meta {
-      display: none;
+      font-size: 0.8rem;
+      color: var(--text-soft);
+      margin-top: 2px;
     }
 
     .welcome-program-nav.summary-nav {
@@ -956,6 +1040,7 @@
     <div class="modal-card">
       <div class="modal-tabs">
         <button type="button" class="modal-tab active" data-tab="overview">Overview</button>
+        <button type="button" class="modal-tab" data-tab="table">Table</button>
         <button type="button" class="modal-tab" data-tab="programs">Programs</button>
         <button type="button" class="modal-close" id="welcome-close-x" aria-label="Close">&times;</button>
       </div>
@@ -1366,7 +1451,11 @@
         label.querySelector("input").addEventListener("change", () => {
           syncBoardSelectAll();
           updateFilterTriggerLabel();
-          renderMap();
+          renderMap().then(() => {
+            if (document.getElementById("summary-drawer")?.classList.contains("open")) {
+              renderSummaryProgram();
+            }
+          });
         });
         list.appendChild(label);
       });
@@ -2392,7 +2481,11 @@
       });
       syncBoardSelectAll();
       updateFilterTriggerLabel();
-      renderMap();
+      renderMap().then(() => {
+        if (document.getElementById("summary-drawer")?.classList.contains("open")) {
+          renderSummaryProgram();
+        }
+      });
     });
 
     map.on("zoomend", () => {
@@ -2460,6 +2553,182 @@
       `;
     }
 
+    function formatCount(n) {
+      if (!Number.isFinite(n)) return "—";
+      return Number(n).toLocaleString();
+    }
+
+    function programThemeTags(programId) {
+      const p = profiles?.programs?.[programId];
+      if (Array.isArray(p?.theme_tags) && p.theme_tags.length) return p.theme_tags;
+      if (Array.isArray(p?.data_themes) && p.data_themes.length) {
+        return p.data_themes.map((t) => String(t).split(/[/(]/)[0].trim()).filter(Boolean).slice(0, 5);
+      }
+      return [];
+    }
+
+    function renderThemeTags(tags) {
+      if (!tags.length) return "—";
+      return `<div class="theme-tags">${tags.map((t) => `<span class="theme-tag">${escapeHtml(t)}</span>`).join("")}</div>`;
+    }
+
+    function formatFreshness(freshness) {
+      if (!freshness) return "—";
+      if (freshness.date_min && freshness.date_max) {
+        return `${freshness.date_min} – ${freshness.date_max}`;
+      }
+      if (Number.isFinite(freshness.year_min) && Number.isFinite(freshness.year_max)) {
+        return `${freshness.year_min} – ${freshness.year_max}`;
+      }
+      if (freshness.note) return freshness.note;
+      return "—";
+    }
+
+    function getProgramLayerStats(programId) {
+      const meta = manifest?.programs?.[programId];
+      const profile = profiles?.programs?.[programId];
+      const isArea = meta?.coverage_type === "area" || profile?.coverage_type === "area";
+      const resolution = currentResolution();
+      const geojson = geoCache.get(`${programId}_r${resolution}`);
+      const filterActive = isBoardFilterActive();
+
+      let totalHexes = 0;
+      let totalUnits = 0;
+      let filteredHexes = 0;
+      let filteredUnits = 0;
+
+      if (geojson?.features?.length) {
+        geojson.features.forEach((feature) => {
+          const props = feature.properties || {};
+          const stations = props.stations || [];
+          let units;
+          if (isArea) {
+            units = Number(props.polygon_count ?? props.station_count ?? 0) || 0;
+          } else if (stations.length) {
+            units = stations.length;
+          } else {
+            units = Number(props.station_count ?? 0) || 0;
+          }
+          totalHexes += 1;
+          totalUnits += units;
+
+          if (!filterActive || featureMatchesBoardFilter(feature)) {
+            filteredHexes += 1;
+            if (filterActive && !isArea && stations.length) {
+              filteredUnits += stations.filter(
+                (s) =>
+                  Number.isFinite(s.lat) &&
+                  Number.isFinite(s.lon) &&
+                  pointMatchesSelectedBoards(s.lon, s.lat)
+              ).length;
+            } else {
+              filteredUnits += units;
+            }
+          }
+        });
+      }
+
+      const manifestCount = isArea
+        ? (meta?.polygon_count ?? meta?.station_count ?? null)
+        : (meta?.station_count ?? null);
+
+      return {
+        isArea,
+        resolution,
+        filterActive,
+        manifestCount,
+        totalHexes: geojson ? totalHexes : null,
+        totalUnits: geojson ? totalUnits : null,
+        filteredHexes: geojson ? filteredHexes : null,
+        filteredUnits: geojson ? filteredUnits : null,
+      };
+    }
+
+    function renderSummaryMetaBlock(programId, p) {
+      const stats = getProgramLayerStats(programId);
+      const unitLabel = stats.isArea ? "Wetland polygons" : "Stations";
+      const coverage = stats.isArea ? "Area coverage" : "Station-based";
+      const resLabel = RES_LABELS[stats.resolution] || `r${stats.resolution}`;
+
+      let footprint = `${formatCount(stats.manifestCount)} ${stats.isArea ? "polygons" : "stations"} in source data`;
+      if (stats.totalHexes != null) {
+        footprint += ` · ${formatCount(stats.totalHexes)} hexes at ${resLabel}`;
+      }
+
+      let filterLine = "All regional boards (no filter)";
+      if (stats.filterActive) {
+        const boardList = [...selectedBoardNames].sort((a, b) => a.localeCompare(b)).join(", ");
+        filterLine = `${selectedBoardNames.size}/${allBoardNames.length} boards selected`;
+        if (boardList) filterLine += ` — ${boardList}`;
+        if (stats.filteredHexes != null) {
+          filterLine += `. On map in filter: ${formatCount(stats.filteredUnits)} ${stats.isArea ? "polygons" : "stations"} in ${formatCount(stats.filteredHexes)} hexes (gray hexes are outside the filter).`;
+        }
+      }
+
+      const boards = Array.isArray(p.regional_boards) && p.regional_boards.length
+        ? p.regional_boards.join(" · ")
+        : "—";
+      const tags = programThemeTags(programId);
+
+      return `
+        <dl class="summary-meta-block">
+          <div class="summary-meta-row"><dt>Coverage</dt><dd>${escapeHtml(coverage)}</dd></div>
+          <div class="summary-meta-row"><dt>${escapeHtml(unitLabel)}</dt><dd>${escapeHtml(footprint)}</dd></div>
+          <div class="summary-meta-row"><dt>Board filter</dt><dd>${escapeHtml(filterLine)}</dd></div>
+          <div class="summary-meta-row"><dt>Regional boards</dt><dd>${escapeHtml(boards)}</dd></div>
+          <div class="summary-meta-row"><dt>Data range</dt><dd>${escapeHtml(formatFreshness(p.freshness))}</dd></div>
+          <div class="summary-meta-row"><dt>Data themes</dt><dd>${renderThemeTags(tags)}</dd></div>
+        </dl>
+      `;
+    }
+
+    function renderWelcomeTable() {
+      if (!profiles?.programs) {
+        return "<p>Program profile data is unavailable right now.</p>";
+      }
+      const ids = summaryProgramOrder();
+      if (!ids.length) return "<p>Program profile data is unavailable right now.</p>";
+
+      const rows = ids.map((id) => {
+        const p = profiles.programs[id];
+        const meta = manifest?.programs?.[id];
+        const isArea = p.coverage_type === "area" || meta?.coverage_type === "area";
+        const count = isArea
+          ? (meta?.polygon_count ?? meta?.station_count)
+          : meta?.station_count;
+        const countLabel = isArea
+          ? `${formatCount(count)} wetland polygons`
+          : `${formatCount(count)} stations`;
+        const highlight = (p.summary || p.why_on_map || "").replace(/\s+/g, " ").trim();
+        const tags = programThemeTags(id);
+        return `<tr>
+          <td class="program-cell">${escapeHtml(p.short_label || p.label || id)}</td>
+          <td>${escapeHtml(highlight)}</td>
+          <td>${escapeHtml(countLabel)}</td>
+          <td>${renderThemeTags(tags)}</td>
+        </tr>`;
+      }).join("");
+
+      return `
+        <p style="margin-bottom:10px;color:var(--text-soft);font-size:0.86rem;">
+          Footprint counts come from the cleaned layers on this map. Theme tags summarize the kinds of monitoring each program covers.
+        </p>
+        <div class="overview-table-wrap">
+          <table class="overview-table">
+            <thead>
+              <tr>
+                <th>Program</th>
+                <th>Highlight</th>
+                <th>Footprint</th>
+                <th>Data themes</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
     function renderWelcomePrograms() {
       if (!profiles?.programs) return "<p>Program profile data is unavailable right now.</p>";
       const ids = summaryProgramOrder();
@@ -2496,6 +2765,8 @@
           summaryIndex = (summaryIndex + 1) % summaryProgramIds.length;
           setWelcomeTab("programs");
         });
+      } else if (tab === "table") {
+        body.innerHTML = renderWelcomeTable();
       } else {
         body.innerHTML = renderWelcomeOverview();
       }
@@ -2545,6 +2816,7 @@
       renderMap().then(() => {
         if (focusToken !== summaryFocusToken || !summaryFocusMode) return;
         if (summaryProgramIds[summaryIndex] !== programId) return;
+        renderSummaryProgram();
         const wait = Math.max(0, zoomAt - performance.now());
         if (wait > 0) setTimeout(runZoom, wait);
         else runZoom();
@@ -2587,7 +2859,9 @@
       const id = summaryProgramIds[summaryIndex];
       const p = profiles.programs[id];
       document.getElementById("summary-title").textContent = p.label;
-      document.getElementById("summary-meta").textContent = "";
+      const coverage = p.coverage_type === "area" ? "Area coverage" : "Station-based";
+      document.getElementById("summary-meta").textContent =
+        `${p.short_label || ""}${p.short_label ? " · " : ""}${coverage}`;
 
       const websiteUrl = p.website || (p.data_links || []).find((l) => l.url)?.url || "";
       const narrative = p.narrative || p.summary || "";
@@ -2596,6 +2870,7 @@
 
       body.innerHTML = `
         ${websiteUrl ? `<a class="summary-url" href="${websiteUrl}" target="_blank" rel="noopener">${escapeHtml(websiteUrl)}</a>` : ""}
+        ${renderSummaryMetaBlock(id, p)}
         <p>${escapeHtml(paragraph)}</p>
         ${renderDataAccessBlock(p)}
       `;

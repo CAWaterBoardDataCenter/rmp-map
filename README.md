@@ -44,8 +44,8 @@ Program blurbs, themes, freshness, and find-data links for the UI live in [`data
 
 Local (`http://localhost:3000`) and live Pages serve the same `main` branch files.
 
-- **About** — welcome pane (overview + program blurbs)
-- **Summary** — half-screen drawer; instantly solos one RMP on the map, then smooth-zooms; closing restores the previous multi-program view
+- **About** — welcome pane (Overview, Table of all six programs, program blurbs)
+- **Summary** — half-screen drawer; instantly solos one RMP on the map, then smooth-zooms; closing restores the previous multi-program view. Metadata block shows footprint counts, regional boards, board-filter status, data range, and theme tags.
 - **Programs / Hex / Map / Overlays / Filter** — layer and view controls
 - **Hex hover** — larger count tag (stations, wetland polygons, or overlap features)
 - **Hex click** — opens that hex’s own records (station table for monitoring programs; wetland polygon summary only for Russian River / area coverage)

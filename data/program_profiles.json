@@ -68,7 +68,14 @@
           "Set IncludeQCData to \"NoQCData\".",
           "Submit the query and download the TSV."
         ]
-      }
+      },
+      "theme_tags": [
+        "Chemistry",
+        "Field",
+        "Nutrients",
+        "Pesticides",
+        "Metals"
+      ]
     },
     "sf_bay": {
       "id": "sf_bay",
@@ -122,7 +129,14 @@
           "Set IncludeQCData to \"NoQCData\".",
           "Submit the query and download the TSV."
         ]
-      }
+      },
+      "theme_tags": [
+        "Chemistry",
+        "Metals",
+        "Organics",
+        "Pesticides",
+        "Field"
+      ]
     },
     "klamath_basin": {
       "id": "klamath_basin",
@@ -182,7 +196,14 @@
           "That spreadsheet is the primary station list used for this map footprint."
         ],
         "note": "CEDEN under \"Klamath Basin Monitoring Program\" has far fewer stations than the KBMP spreadsheet. Prefer the KBMP download for footprint work. Optional CEDEN path: https://ceden.waterboards.ca.gov/CQT/Home/AqtTool."
-      }
+      },
+      "theme_tags": [
+        "Field",
+        "Temperature",
+        "Conventional",
+        "Sediment",
+        "Biology"
+      ]
     },
     "smc": {
       "id": "smc",
@@ -239,7 +260,14 @@
           "Submit the query and download the TSV."
         ],
         "note": "SMC public data pages are often unreliable. CEDEN is the practical download path used here."
-      }
+      },
+      "theme_tags": [
+        "Chemistry",
+        "Metals",
+        "Nutrients",
+        "Pesticides",
+        "Benthic"
+      ]
     },
     "bight": {
       "id": "bight",
@@ -298,7 +326,14 @@
           "Submit the query and download the TSV."
         ],
         "note": "Survey stations differ by Bight batch year."
-      }
+      },
+      "theme_tags": [
+        "Chemistry",
+        "Survey",
+        "Metals",
+        "Organics",
+        "Field"
+      ]
     },
     "russian_river": {
       "id": "russian_river",
@@ -352,7 +387,11 @@
           "For R3MP program context: https://www.russianriverconfluence.org/r3mp"
         ],
         "note": "CEDEN \"Russian River MS4 Program\" has very few unique stations and is not the primary footprint source for this map."
-      }
+      },
+      "theme_tags": [
+        "Wetland inventory",
+        "Habitat mapping"
+      ]
     }
   }
 }
