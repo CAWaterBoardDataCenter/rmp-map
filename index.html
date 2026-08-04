@@ -539,7 +539,7 @@
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 28px;
     }
 
     .modal-overlay.open { display: flex; }
@@ -548,56 +548,34 @@
       background: var(--surface);
       border-radius: 16px;
       box-shadow: var(--shadow-lg);
-      width: min(720px, 100%);
-      max-height: min(660px, 90vh);
+      width: min(980px, 94vw);
+      height: min(720px, 88vh);
+      max-height: min(720px, 88vh);
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
 
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 18px 22px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .modal-header h2 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-    }
-
-    .modal-close {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      line-height: 1;
-      cursor: pointer;
-      color: var(--text-soft);
-      padding: 2px 6px;
-    }
-
-    .modal-close:hover { color: var(--text); }
-
     .modal-tabs {
       display: flex;
-      gap: 4px;
-      padding: 10px 22px 0;
+      align-items: center;
+      gap: 6px;
+      padding: 14px 28px 0;
       border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
     }
 
     .modal-tab {
-      padding: 8px 14px;
+      padding: 12px 16px;
       font-family: inherit;
-      font-size: 0.82rem;
+      font-size: 1rem;
       font-weight: 600;
       color: var(--text-soft);
       background: none;
       border: none;
       cursor: pointer;
       border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
     }
 
     .modal-tab.active {
@@ -607,34 +585,49 @@
 
     .modal-tab:hover { color: var(--text); }
 
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.6rem;
+      line-height: 1;
+      cursor: pointer;
+      color: var(--text-soft);
+      padding: 4px 6px;
+      margin-left: auto;
+      margin-bottom: 6px;
+    }
+
+    .modal-close:hover { color: var(--text); }
+
     .modal-body {
-      padding: 18px 22px;
+      padding: 28px 32px;
       overflow-y: auto;
       flex: 1;
-      font-size: 0.86rem;
-      line-height: 1.6;
+      font-size: 1.05rem;
+      line-height: 1.7;
       color: var(--text);
     }
 
-    .modal-body p { margin-bottom: 10px; }
+    .modal-body p { margin-bottom: 1.1em; }
     .modal-body a { color: var(--accent-dark); }
 
     .modal-footer {
-      padding: 14px 22px;
+      padding: 16px 28px;
       border-top: 1px solid var(--border);
       display: flex;
       justify-content: flex-end;
+      flex-shrink: 0;
     }
 
     .btn-primary {
       background: var(--accent);
       color: #fff;
       border: none;
-      padding: 9px 20px;
+      padding: 11px 24px;
       border-radius: 8px;
       font-family: inherit;
       font-weight: 600;
-      font-size: 0.82rem;
+      font-size: 0.92rem;
       cursor: pointer;
     }
 
@@ -811,16 +804,13 @@
     </div>
   </aside>
 
-  <div class="modal-overlay" id="welcome-modal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal-overlay" id="welcome-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="About this map">
     <div class="modal-card">
-      <div class="modal-header">
-        <h2>What this map shows</h2>
-        <button type="button" class="modal-close" id="welcome-close-x" aria-label="Close">&times;</button>
-      </div>
       <div class="modal-tabs">
         <button type="button" class="modal-tab active" data-tab="overview">Overview</button>
         <button type="button" class="modal-tab" data-tab="programs">Programs</button>
         <button type="button" class="modal-tab" data-tab="find-data">Find data</button>
+        <button type="button" class="modal-close" id="welcome-close-x" aria-label="Close">&times;</button>
       </div>
       <div class="modal-body" id="welcome-body"></div>
       <div class="modal-footer">
@@ -2167,12 +2157,14 @@
 
     function renderWelcomeOverview() {
       const intro = profiles?.map_intro;
-      if (!intro) return "<p>Program profile data is unavailable right now, but the map below still works — pick programs from the Programs menu to explore station footprints.</p>";
+      if (!intro) {
+        return "<p>Program profile data is unavailable right now, but the map below still works — pick programs from the Programs menu to explore station footprints.</p>";
+      }
+      const p1 = `${intro.summary} ${intro.comparable_why}`.replace(/\s+/g, " ").trim();
+      const p2 = (intro.honesty_note || "").replace(/\s+/g, " ").trim();
       return `
-        <h3 style="font-size:1rem;margin-bottom:8px;">${escapeHtml(intro.title || "What this map shows")}</h3>
-        <p style="margin-bottom:12px;">${escapeHtml(intro.summary)}</p>
-        <p style="margin-bottom:12px;color:var(--text-soft);">${escapeHtml(intro.comparable_why)}</p>
-        <p style="font-size:0.75rem;color:var(--text-softer);border-top:1px solid var(--border);padding-top:12px;">${escapeHtml(intro.honesty_note)}</p>
+        <p>${escapeHtml(p1)}</p>
+        <p>${escapeHtml(p2)}</p>
       `;
     }
 
