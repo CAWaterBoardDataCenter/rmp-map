@@ -4,6 +4,8 @@ Interactive map of six California regional water monitoring programs (RMPs). Sta
 
 Live map: https://isamuthung.github.io/regional_monitering_programs/
 
+**Future Directions:** [RMP_Map_Future_Directions.pdf](RMP_Map_Future_Directions.pdf) — written by the author, **Isamu Thung**, on possible next steps and extensions for this map (not product documentation for the current build).
+
 Local preview:
 
 ```powershell
