@@ -2,7 +2,7 @@
 
 Interactive map of six California regional water monitoring programs (RMPs). Station locations (and, for Russian River, wetland inventory polygons) are aggregated into **H3 hex grids** at about 5 km, 3 km, and 1 km. The map shows **where** programs observe the landscape — not lab results over time.
 
-Live map: https://isamuthung.github.io/regional_monitering_programs/
+Live map: https://cawaterboarddatacenter.github.io/rmp-map/
 
 **Future Directions:** [RMP_Map_Future_Directions.pdf](RMP_Map_Future_Directions.pdf) — written by the author, **Isamu Thung**, on possible next steps and extensions for this map (not product documentation for the current build).
 
